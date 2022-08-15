@@ -1,5 +1,6 @@
 extern crate anymap;
 use std::collections::binary_heap::Iter;
+use std::io::empty;
 
 use crate::utils::collections::packed_array::{PackedArray, IndexedElem, self};
 use crate::ecs::{
@@ -60,39 +61,28 @@ impl ComponentTable {
         }
     }
 
-    pub fn iterate_over_1_component<'a, C: 'static>(&'a mut self) -> ComponentIterator1<C> {
+    pub fn iterate_over_1_component<'a, C: 'static>(&'a mut self) -> Option<ComponentIterator1<'a, C>> {
         let result = ComponentIterator1::<C> {
-            components_id: 0,
             iterator: match self.components.get_mut::<PackedArray<C>>() {
-                None => None, // components is not in the table, so empty iterator
-                Some(packed_array) => Some(packed_array.iter_mut()),
+                None => return None,
+                Some(packed_array) => packed_array.iter_mut(),
             },
-            current_entity_id: 0,
-            current_comp_index: 0,
         };
-        return result;
+        return Some(result);
     }
 }
 
 
-pub struct ComponentIterator1<C> {
-    components_id: usize,
-    current_entity_id: usize,
-    current_comp_index: u32,
-    iterator: dyn Iterator<Item = C>,
+pub struct ComponentIterator1<'a, C> {
+    iterator: std::slice::IterMut<'a, IndexedElem<C>>,
 }
 
-impl<C> Iterator for ComponentIterator1<C> {
-    type Item = &mut C;
+impl<'a, C> Iterator for ComponentIterator1<'a, C> {
+    type Item = &'a mut C;
     fn next(&mut self) -> Option<Self::Item> {
-        match &self.iterator {
-            Some(mut iterator) => {
-                match iterator.next() {
-                    Some(elem) => return Some(&mut elem.elem),
-                    None => return None,
-                }
-            },
+        match self.iterator.next() {
             None => return None,
+            Some(elem) => return Some(&mut elem.elem),
         }
     }
 }
