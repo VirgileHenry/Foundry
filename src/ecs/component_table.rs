@@ -1,10 +1,15 @@
 extern crate anymap;
-use std::collections::binary_heap::Iter;
-use std::io::empty;
-
-use crate::utils::collections::packed_array::{PackedArray, IndexedElem, self};
+use std::{
+    any::{
+        TypeId,
+        Any,
+    },
+    marker::PhantomData, cell::RefCell,
+};
+use crate::utils::collections::packed_array::{PackedArray, IndexedElem};
 use crate::ecs::{
-    entity::Entity
+    entity::Entity,
+    component_array::ComponentArray,
 };
 
 pub struct ComponentTable {
@@ -19,14 +24,14 @@ impl ComponentTable {
     }
 
     pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
-        match self.components.get_mut::<PackedArray<C>>() {
-            Some(packed_array) => {
+        match self.components.get_mut::<ComponentArray<C>>() {
+            Some(components) => {
                 // case where the component array exist
-                return packed_array.insert(component, entity.id);
+                return components.insert_component(component, entity.id);
             },
             None => {
                 // create the component array from the new element
-                self.components.insert::<PackedArray<C>>(PackedArray::<C>::new_with_elem(component, entity.id));
+                self.components.insert::<ComponentArray<C>>(ComponentArray::<C>::new_with_elem(component, entity.id));
                 return None;
             },
         };
@@ -34,55 +39,81 @@ impl ComponentTable {
 
     pub fn add_comp_to_last<C: 'static>(&mut self, entity: &Entity, component: C) {
         // this may only be used if we are ensured the entity is the last one, and it does not have this component yet
-        match self.components.get_mut::<PackedArray<C>>() {
-            Some(packed_array) => packed_array.append(component, entity.id),
-            None => { self.components.insert(PackedArray::new_with_elem(component, entity.id));} ,
+        match self.components.get_mut::<ComponentArray<C>>() {
+            Some(components) => components.append_component(component, entity.id),
+            None => { self.components.insert::<ComponentArray<C>>(ComponentArray::<C>::new_with_elem(component, entity.id)); },
         };
     }
 
+    /*
     pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
-        return match self.components.get::<PackedArray<C>>() {
+        return match self.components.get::<ComponentArray<C>>() {
             None => None,
-            Some(packed_array) => packed_array.get(entity.id),
+            Some(comp_arr) => comp_arr.get_component(entity.id),
         }
     }
+    */
 
     pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
-        return match self.components.get_mut::<PackedArray<C>>() {
+        return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
-            Some(packed_array) => packed_array.get_mut(entity.id),
+            Some(comp_arr) => comp_arr.get_component_mut(entity.id),
         }
     }
 
     pub fn remove_component<C: 'static>(&mut self, entity: &Entity) -> Option<C> {
-        return match self.components.get_mut::<PackedArray<C>>() {
+        return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
-            Some(packed_array) => packed_array.remove(entity.id),
+            Some(comp_arr) => comp_arr.remove_component(entity.id),
         }
     }
 
-    pub fn iterate_over_1_component<'a, C: 'static>(&'a mut self) -> Option<ComponentIterator1<'a, C>> {
-        let result = ComponentIterator1::<C> {
-            iterator: match self.components.get_mut::<PackedArray<C>>() {
+    pub fn iterate_over_1_component_mut<'a, C: 'static>(&'a mut self) -> ComponentIterator1<'a, C> {
+        return ComponentIterator1::<'a, C> {
+            array: match self.components.get_mut::<ComponentArray<C>>() {
+                None => None,
+                Some(comp_arr) => Some(comp_arr.get_array_mut()),
+            },
+            current_index: 0,
+        };
+    }
+
+    /*
+    pub fn iterate_over_2_component<'a, C1: 'static, C2: 'static>(&'a mut self) -> Option<ComponentIterator_2<'a, C1, C2>> {
+        return Some(ComponentIterator_2::<C1, C2> {
+            iterator_1: match self.components.get_mut::<PackedArray<C1>>() {
                 None => return None,
                 Some(packed_array) => packed_array.iter_mut(),
             },
-        };
-        return Some(result);
+            iterator_2: match self.components.get_mut::<PackedArray<C2>>() {
+                None => return None,
+                Some(packed_array) => packed_array.iter_mut(),
+            },
+            current_entity: 0,
+        });
     }
+    */
 }
 
 
 pub struct ComponentIterator1<'a, C> {
-    iterator: std::slice::IterMut<'a, IndexedElem<C>>,
+    array: Option<&'a Vec<IndexedElem<C>>>,
+    current_index: usize,
 }
 
-impl<'a, C> Iterator for ComponentIterator1<'a, C> {
-    type Item = &'a mut C;
+
+impl<'a, C: 'static> Iterator for ComponentIterator1<'a, C> {
+    type Item = &'a C;
     fn next(&mut self) -> Option<Self::Item> {
-        match self.iterator.next() {
-            None => return None,
-            Some(elem) => return Some(&mut elem.elem),
+        return match self.array {
+            None => None,
+            Some(array) => match array.get(self.current_index) {
+                None => None,
+                Some(elem) => {
+                    self.current_index += 1;
+                    Some(&elem.elem)
+                }
+            }
         }
     }
 }

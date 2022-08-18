@@ -69,8 +69,14 @@ impl ECS {
         return self.components.add_component(entity, component);
     }
 
+    /*
     pub fn get_component<C: 'static>(&mut self, entity: &Entity) -> Option<&C> {
         return self.components.get_component::<C>(entity);
+    }
+    */
+
+    pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
+        return self.components.get_component_mut::<C>(entity);
     }
 
     pub fn remove_component<C: 'static>(&mut self, entity: &Entity) -> Option<C> {
@@ -89,3 +95,7 @@ impl ECS {
     }
 }
 
+// macros to create entities with any number of components
+macro_rules! create_entity {
+    () => {1+3};
+}

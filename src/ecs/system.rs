@@ -12,6 +12,10 @@ pub struct System {
 }
 
 impl System {
+    pub fn new(system: Box<dyn Updatable>, update_frequency: UpdateFrequency) -> System {
+        return System { system: system, frequency: update_frequency, timer: 0.0 };
+    }
+
     pub fn update(&mut self, components: &ComponentTable, delta: f32) {
         match self.frequency {
             UpdateFrequency::PerFrame => self.system.update(components, delta),
