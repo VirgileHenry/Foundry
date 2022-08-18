@@ -33,30 +33,6 @@ impl ECS {
         self.last_entity_id += 1;
         return result;
     }
-    
-    pub fn create_entity_with_1<C: 'static>(&mut self, component: C) -> Entity {
-        // C is a component
-        let result: Entity = Entity {
-            id: self.last_entity_id,
-        };
-        self.last_entity_id += 1;
-        // add the component, as we just created the entity we can fast push in the packed array
-        self.components.add_comp_to_last(&result, component);
-        return result;
-    }
-
-    pub fn create_entity_with_2<C1: 'static, C2: 'static>(&mut self, component_1: C1, component_2: C2) -> Entity {
-        // C is a component
-        let result: Entity = Entity {
-            id: self.last_entity_id,
-        };
-        self.last_entity_id += 1;
-        // add the component, as we just created the entity we can fast push in the packed array
-        self.components.add_comp_to_last(&result, component_1);
-        self.components.add_comp_to_last(&result, component_2);
-
-        return result;
-    }
 
     pub fn destroy_entity(&mut self, entity: Entity) {
         // how to know what components this entity possess ?
@@ -69,11 +45,9 @@ impl ECS {
         return self.components.add_component(entity, component);
     }
 
-    /*
     pub fn get_component<C: 'static>(&mut self, entity: &Entity) -> Option<&C> {
         return self.components.get_component::<C>(entity);
     }
-    */
 
     pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
         return self.components.get_component_mut::<C>(entity);
@@ -96,6 +70,15 @@ impl ECS {
 }
 
 // macros to create entities with any number of components
+#[macro_export]
 macro_rules! create_entity {
-    () => {1+3};
+    ($ecs:expr) => { ECS::create_entity(&mut $ecs) };
+    ($ecs:expr; $($comp:expr),*) => { {
+        let result_entity = ECS::create_entity(&mut $ecs);
+        $(
+            $ecs.components.add_comp_to_last(&result_entity, $comp);
+        )*
+        result_entity
+    } };
+    // todo : expand to creating lots of entities at once
 }

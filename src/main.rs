@@ -25,8 +25,9 @@ struct Velocity {
 #[test]
 fn component_test() {
     let mut ecs: ECS = ECS::new();
-    let entity1: Entity = ecs.create_entity_with_1(Position{x:1.0, y:0.5});
-    let entity2: Entity = ecs.create_entity_with_2(Position{x: 0.2, y: 1.3}, Velocity{vx:0.1, vy:-0.3});
+    let entity: Entity = create_entity!(ecs);
+    let entity1: Entity = create_entity!(ecs; Position{x:1.0, y:0.5});
+    let entity2: Entity = create_entity!(ecs; Position{x: 0.2, y: 1.3}, Velocity{vx:0.1, vy:-0.3});
     match ecs.get_component_mut::<Position>(&entity1) {
         None => println!("Unable to find component position"),
         Some(pos) => println!("Found position at {} {}", pos.x, pos.y),

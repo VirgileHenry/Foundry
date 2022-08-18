@@ -23,11 +23,9 @@ impl<C> ComponentArray<C> {
         self.comp_arr.get_mut().append(component, index);
     }
 
-    /*
     pub fn get_component(&self, index: usize) -> Option<&C> {
-        return self.comp_arr.get_mut().get(index);
+        unsafe { return (*self.comp_arr.get()).get(index); }
     }
-    */
 
     pub fn get_component_mut(&mut self, index: usize) -> Option<&mut C> {
         return self.comp_arr.get_mut().get_mut(index);
@@ -37,11 +35,9 @@ impl<C> ComponentArray<C> {
         return self.comp_arr.get_mut().remove(index);
     }
 
-    /*
     pub fn get_array(&self) -> &Vec<IndexedElem<C>> {
-        return self.comp_arr.get_mut().get_vec();
+        unsafe { return (*self.comp_arr.get()).get_vec(); }
     }
-    */
 
     pub fn get_array_mut(&mut self) -> &mut Vec<IndexedElem<C>> {
         return self.comp_arr.get_mut().get_vec_mut();

@@ -1,12 +1,5 @@
 extern crate anymap;
-use std::{
-    any::{
-        TypeId,
-        Any,
-    },
-    marker::PhantomData, cell::RefCell,
-};
-use crate::utils::collections::packed_array::{PackedArray, IndexedElem};
+use crate::utils::collections::packed_array::IndexedElem;
 use crate::ecs::{
     entity::Entity,
     component_array::ComponentArray,
@@ -45,14 +38,12 @@ impl ComponentTable {
         };
     }
 
-    /*
     pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
         return match self.components.get::<ComponentArray<C>>() {
             None => None,
             Some(comp_arr) => comp_arr.get_component(entity.id),
         }
     }
-    */
 
     pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
         return match self.components.get_mut::<ComponentArray<C>>() {
@@ -68,11 +59,11 @@ impl ComponentTable {
         }
     }
 
-    pub fn iterate_over_1_component_mut<'a, C: 'static>(&'a mut self) -> ComponentIterator1<'a, C> {
+    pub fn iterate_over_1_component_mut<'a, C: 'static>(&'a self) -> ComponentIterator1<'a, C> {
         return ComponentIterator1::<'a, C> {
-            array: match self.components.get_mut::<ComponentArray<C>>() {
+            array: match self.components.get::<ComponentArray<C>>() {
                 None => None,
-                Some(comp_arr) => Some(comp_arr.get_array_mut()),
+                Some(comp_arr) => Some(comp_arr.get_array()),
             },
             current_index: 0,
         };
