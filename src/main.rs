@@ -27,11 +27,17 @@ fn component_test() {
     let mut ecs: ECS = ECS::new();
     let entity1: Entity = ecs.create_entity_with_1(Position{x:1.0, y:0.5});
     let entity2: Entity = ecs.create_entity_with_2(Position{x: 0.2, y: 1.3}, Velocity{vx:0.1, vy:-0.3});
-    match ecs.get_component::<Position>(&entity1) {
+    match ecs.get_component_mut::<Position>(&entity1) {
         None => println!("Unable to find component position"),
         Some(pos) => println!("Found position at {} {}", pos.x, pos.y),
     }
-    
+}
+
+#[test]
+fn entity_macro_creation_test() {
+    let mut ecs = ECS::new();
+    // objective :
+    // let entity = create_entity!(ecs, Position{...}, Velocity{...});
 }
 
 #[test]
@@ -40,37 +46,11 @@ fn iterate_component_test() {
     let mut entities: Vec<Entity> = Vec::new();
     for i in 0..100 {
         entities.push(ecs.create_entity());
-        ecs.add_component::<Position>(entities.get(i).unwrap(), Position { x: 0.0, y: 0.0 });
+        ecs.add_component::<Position>(entities.get(i).unwrap(), Position { x: i as f32, y: (100 - i) as f32 });
     }
 
-    match ecs.components.iterate_over_1_component::<Position>() {
-        None => {},
-        Some(iterator) => {
-            for component in iterator {
-                println!("reading positions : {} {}", component.x, component.y);
-            }
-        }
-    }
-    let mut val = 1.0;
-    match ecs.components.iterate_over_1_component::<Position>() {
-        None => {},
-        Some(iterator) => {
-            for component in iterator {
-                println!("writing positions : {} {}", val, val);
-                component.x = val;
-                component.y = val;
-                val += 1.0;
-            }
-        }
-    }
-
-    match ecs.components.iterate_over_1_component::<Position>() {
-        None => {},
-        Some(iterator) => {
-            for component in iterator {
-                println!("reading positions : {} {}", component.x, component.y);
-            }
-        }
+    for component in ecs.components.iterate_over_1_component_mut::<Position>() {
+        println!("reading positions : {} {}", component.x, component.y);
     }
 }
 
@@ -94,12 +74,8 @@ impl Updatable for PhysicSystem {
 #[test] 
 fn system_test() {
     let physics: PhysicSystem = PhysicSystem { gravity_x: 0.0, gravity_y: -9.81 };
-    let physic_sys: System = System {
-        system: Box::new(physics),
-        frequency: UpdateFrequency::Fixed(0.05),
-        timer: 0.0,
-    };
-    let ecs = ECS::new();
+    let physic_sys = System::new(Box::new(physics), UpdateFrequency::Fixed(0.05));
+    let mut ecs = ECS::new();
     ecs.register_system(physic_sys, 0);
 }
 
