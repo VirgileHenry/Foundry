@@ -136,6 +136,14 @@ impl<T> PackedArray<T> {
         }
     }
 
+    pub fn get_vec(&self) -> &Vec<IndexedElem<T>> {
+        return &self.data;
+    }
+
+    pub fn get_vec_mut(&mut self) -> &mut Vec<IndexedElem<T>> {
+        return &mut self.data;
+    }
+
     pub fn iter(&self) -> std::slice::Iter<IndexedElem<T>> {
         return self.data.iter();
     }
