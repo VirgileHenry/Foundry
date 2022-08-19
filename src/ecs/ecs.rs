@@ -64,7 +64,7 @@ impl ECS {
     pub fn update(&mut self, delta: f32) {
         // update every system in order
         for system in self.systems.iter_mut() {
-            system.elem.update(&self.components, delta);
+            system.elem.update(&mut self.components, delta);
         }
     }
 }

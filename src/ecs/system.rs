@@ -16,7 +16,7 @@ impl System {
         return System { system: system, frequency: update_frequency, timer: 0.0 };
     }
 
-    pub fn update(&mut self, components: &ComponentTable, delta: f32) {
+    pub fn update(&mut self, components: &mut ComponentTable, delta: f32) {
         match self.frequency {
             UpdateFrequency::PerFrame => self.system.update(components, delta),
             UpdateFrequency::Fixed(freq) => {
@@ -31,6 +31,6 @@ impl System {
 }
 
 pub trait Updatable {
-    fn update(&mut self, components: &ComponentTable, delta: f32);
+    fn update(&mut self, components: &mut ComponentTable, delta: f32);
 }
 

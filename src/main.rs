@@ -12,6 +12,7 @@ use crate::ecs::ecs::ECS;
 mod utils;
 
 
+
 struct Position {
     x: f32,
     y: f32,
@@ -46,13 +47,59 @@ fn iterate_component_test() {
     let mut ecs = ECS::new();
     let mut entities: Vec<Entity> = Vec::new();
     for i in 0..100 {
-        entities.push(ecs.create_entity());
-        ecs.add_component::<Position>(entities.get(i).unwrap(), Position { x: i as f32, y: (100 - i) as f32 });
+        entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }, Velocity{vx: 0.0, vy:0.0}));
     }
 
     for component in ecs.components.iterate_over_1_component_mut::<Position>() {
         println!("reading positions : {} {}", component.x, component.y);
     }
+
+    for component in ecs.components.iterate_over_1_component_mut::<Velocity>() {
+        println!("reading velocity : {} {}", component.vx, component.vy);
+    }
+
+    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
+
+    ecs = ECS::new();
+    entities = vec!();
+    for i in 0..100 {
+        if i % 2 == 0 {
+            entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+        else {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }));
+        }
+    }
+    println!("Should found no entity with both components :");
+    
+    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
+
+    ecs = ECS::new();
+    entities = vec!();
+    for i in 0..100 {
+        if i > 50 {
+            entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+        else if i < 50 {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }));
+        }
+        else {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }, Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+    }
+    println!("Should found one entity with both components :");
+    
+    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
+
 }
 
 
@@ -62,12 +109,11 @@ struct PhysicSystem {
 }
 
 impl Updatable for PhysicSystem {
-    fn update(&mut self, components: &ecs::component_table::ComponentTable, delta: f32) {
-        /*
-        match components.iterate_over_components_2::<Position, Velocity>() {
-
+    fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
+        for comps in components.iterate_over_2_component_mut::<Position, Velocity>() {
+            let (pos, vel) = comps; // unpack
+            println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
         }
-        */
     }
 }
 
@@ -84,7 +130,6 @@ fn system_test() {
 
 
 fn main() {
-
 
 }
 
