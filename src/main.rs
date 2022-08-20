@@ -50,15 +50,15 @@ fn iterate_component_test() {
         entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }, Velocity{vx: 0.0, vy:0.0}));
     }
 
-    for component in ecs.components.iterate_over_1_component_mut::<Position>() {
+    for component in iterate_over_component!(&mut ecs; Position) {
         println!("reading positions : {} {}", component.x, component.y);
     }
 
-    for component in ecs.components.iterate_over_1_component_mut::<Velocity>() {
+    for component in iterate_over_component!(&mut ecs; Velocity) {
         println!("reading velocity : {} {}", component.vx, component.vy);
     }
 
-    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
         let (pos, vel) = comps; // unpack
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
     }
@@ -75,7 +75,7 @@ fn iterate_component_test() {
     }
     println!("Should found no entity with both components :");
     
-    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
         let (pos, vel) = comps; // unpack
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
     }
@@ -95,7 +95,7 @@ fn iterate_component_test() {
     }
     println!("Should found one entity with both components :");
     
-    for comps in ecs.components.iterate_over_2_component_mut::<Position, Velocity>() {
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
         let (pos, vel) = comps; // unpack
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
     }
@@ -131,5 +131,60 @@ fn system_test() {
 
 fn main() {
 
+    let mut ecs = ECS::new();
+    let mut entities: Vec<Entity> = Vec::new();
+    for i in 0..100 {
+        entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }, Velocity{vx: 0.0, vy:0.0}));
+    }
+
+    for component in iterate_over_component!(&mut ecs; Position) {
+        println!("reading positions : {} {}", component.x, component.y);
+    }
+
+    for component in iterate_over_component!(&mut ecs; Velocity) {
+        println!("reading velocity : {} {}", component.vx, component.vy);
+    }
+
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
+
+    ecs = ECS::new();
+    entities = vec!();
+    for i in 0..100 {
+        if i % 2 == 0 {
+            entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+        else {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }));
+        }
+    }
+    println!("Should found no entity with both components :");
+    
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
+
+    ecs = ECS::new();
+    entities = vec!();
+    for i in 0..100 {
+        if i > 50 {
+            entities.push(create_entity!(ecs; Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+        else if i < 50 {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }));
+        }
+        else {
+            entities.push(create_entity!(ecs; Velocity { vx: i as f32, vy: (100 - i) as f32 }, Position { x: i as f32, y: (100 - i) as f32 }));
+        }
+    }
+    println!("Should found one entity with both components :");
+    
+    for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
+        let (pos, vel) = comps; // unpack
+        println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
+    }
 }
 

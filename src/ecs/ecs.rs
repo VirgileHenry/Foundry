@@ -1,3 +1,5 @@
+use anymap::AnyMap;
+
 use crate::utils::collections::packed_array::PackedArray;
 
 use super::{
@@ -39,7 +41,12 @@ impl ECS {
         // todo : either entity store components ref, or look for every component
     }
 
-    // todo : ways to create entity with components, and multiple entities with same components types
+    // todo : way to create lots of entities with similar components
+
+    
+    pub fn get_unsafe_component_map(&mut self) -> &mut anymap::Map {
+        return self.components.get_component_map();
+    }
 
     pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
         return self.components.add_component(entity, component);
