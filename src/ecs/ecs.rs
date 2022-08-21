@@ -16,7 +16,6 @@ pub struct ECS {
     pub components: ComponentTable, // todo : private
     // all the systems, ids being order of execution
     systems: PackedArray<System>,
-    last_entity_id: usize,
 }
 
 impl ECS {
@@ -24,51 +23,50 @@ impl ECS {
         return ECS {  
             components: ComponentTable::new(),
             systems: PackedArray::new(),
-            last_entity_id: 1,
         };
     }
 
+    #[inline]
     pub fn create_entity(&mut self) -> Entity {
-        let result: Entity = Entity {
-            id: self.last_entity_id,
-        };
-        self.last_entity_id += 1;
-        return result;
+        self.components.create_entity()
     }
 
+    #[inline]
     pub fn destroy_entity(&mut self, entity: Entity) {
         todo!();
     }
 
+    #[inline]
     pub fn create_entities(&mut self, count: usize) -> Vec<Entity> {
-        let mut result = Vec::with_capacity(count);
-        for i in 0..count {
-            result.push(Entity { id: self.last_entity_id + i });
-        }
-        self.last_entity_id += count;
-        return result;
+        self.components.create_entities(count)
     }
     
+    #[inline]
     pub fn get_unsafe_component_map(&self) -> &anymap::Map {
         return self.components.get_component_map();
     }
 
+    #[inline]
     pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
         return self.components.add_component(entity, component);
     }
 
+    #[inline]
     pub fn get_component<C: 'static>(&mut self, entity: &Entity) -> Option<&C> {
         return self.components.get_component::<C>(entity);
     }
 
+    #[inline]
     pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
         return self.components.get_component_mut::<C>(entity);
     }
 
+    #[inline]
     pub fn remove_component<C: 'static>(&mut self, entity: &Entity) -> Option<C> {
         return self.components.remove_component::<C>(entity);
     }
 
+    #[inline]
     pub fn register_system(&mut self, system: System, index: usize) {
         self.systems.insert(system, index);
     }
