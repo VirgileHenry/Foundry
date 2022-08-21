@@ -32,6 +32,16 @@ impl<T> PackedArray<T> {
         return PackedArray { data: vec![IndexedElem::new(elem, index)] };
     }
 
+    pub fn new_with_vec(vec: Vec<T>, start_index: usize) -> PackedArray<T> {
+        let mut start_vec = Vec::<IndexedElem<T>>::with_capacity(vec.len());
+        let mut index: usize = 0;
+        for elem in vec.into_iter() {
+            start_vec.push(IndexedElem{elem: elem, index:index + start_index});
+            index += 1;
+        }
+        return PackedArray { data: start_vec };
+    }
+
     // insert an element to the packed array. If an element with similar index exists, it is replaced and returned
     pub fn insert(&mut self, elem: T, index: usize) -> Option<T> {
         // binary search
@@ -70,6 +80,16 @@ impl<T> PackedArray<T> {
             panic!("Unable to append to packed array : index was not the last elem. Consider using insert.");
         }
         self.data.push(IndexedElem::new(elem, index));
+    }
+
+    pub fn append_vec(&mut self, elems: Vec<T>, start_index: usize) {
+        let mut to_add_vec = Vec::<IndexedElem<T>>::with_capacity(elems.len());
+        let mut index = 0;
+        for elem in elems.into_iter() {
+            to_add_vec.push(IndexedElem{elem:elem, index:start_index+index});
+            index += 1;
+        }
+        self.data.append(&mut to_add_vec);
     }
 
     pub fn remove(&mut self, index: usize) -> Option<T> {
