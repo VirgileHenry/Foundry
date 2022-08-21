@@ -55,6 +55,10 @@ fn iterate_component_test() {
         println!("reading velocity : {} {}", component.vx, component.vy);
     }
 
+    for component in iterate_over_component!(&mut ecs; Velocity) {
+        println!("writing velocity : {} {}", component.vx, component.vy);
+    }
+
     for comps in iterate_over_component!(&mut ecs; Position, Velocity) {
         let (pos, vel) = comps; // unpack
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
@@ -134,17 +138,19 @@ fn main() {
     // Code block to measure.
     {
         let mut ecs = ECS::new();
-        let mut entities: Vec<Entity> = create_entities!(ecs; 1_000_000,
+        let mut entities: Vec<Entity> = create_entities!(ecs; 1_000,
             |i:usize| -> Position {Position{x:i as f32, y:i as f32}},
             |i:usize| -> Velocity {Velocity { vx: i as f32, vy: i as f32 }} );
-        for (pos, vel) in iterate_over_component!(&ecs; Position, Velocity) {
+        for (pos, vel) in iterate_over_component_mut!(&ecs; Position, Velocity) {
             // doing stuff on pos and vel
             let some_var = pos.x + pos.y + vel.vx + vel.vy;
         }
+
     }
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
+    
 
 
 }
