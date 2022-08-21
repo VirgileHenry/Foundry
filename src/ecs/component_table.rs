@@ -38,8 +38,15 @@ impl ComponentTable {
         };
     }
 
-    pub fn get_component_map(&mut self) -> &mut anymap::Map {
-        return &mut self.components;
+    pub fn add_comps_to_last<C: 'static>(&mut self, start_index: usize, component_vec: Vec<C>) {
+        match self.components.get_mut::<ComponentArray<C>>() {
+            Some(components) => components.append_components(component_vec, start_index),
+            None => { self.components.insert::<ComponentArray<C>>(ComponentArray::<C>::new_with_vec(component_vec, start_index));},
+        };
+    }
+
+    pub fn get_component_map(&self) -> &anymap::Map {
+        return &self.components;
     }
 
     pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
@@ -83,17 +90,36 @@ macro_rules! fn_internal_get_next_elem {
     }
 }
 
+
 #[macro_export]
-macro_rules! internal_get_first {
-    ($first:ty; $($other:ty),*) => {
-        $current
+macro_rules! iterate_over_component {
+    ($ecs:expr; $($comp:ident),+) => {
+        {
+            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
+            let mut comp_map = ECS::get_unsafe_component_map($ecs);
+
+            internal_iterate_over_component!(comp_map; $($comp),+)
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! iterate_over_component_from_sys {
+    ($components:expr; $($comp:ident),+) => {
+        {
+            use crate::ecs::component_table::ComponentTable;
+            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
+            let mut comp_map = ComponentTable::get_component_map($components);
+
+            internal_iterate_over_component!(comp_map; $($comp),+)
+        }
     }
 }
 
 
 #[macro_export]
-macro_rules! iterate_over_component {
-    ($ecs:expr; $($comp:ident),+) => {
+macro_rules! internal_iterate_over_component {
+    ($comp_map:expr; $($comp:ident),+) => {
         {
             // use statments to import everything that is needed
             use crate::utils::collections::packed_array::IndexedElem;
@@ -201,15 +227,12 @@ macro_rules! iterate_over_component {
                 }
             }
 
-            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
-            let mut comp_map = ECS::get_unsafe_component_map($ecs);
-
             MacroGeneratedComponentIterator::<$($comp),+> {
                 current_iterator: macro_generated_reset(),
                 current_entity: 0,
                 $(
                     $comp: MacroGeneratedIterableVec {
-                        vec: match comp_map.get::<ComponentArray<$comp>>() {
+                        vec: match $comp_map.get::<ComponentArray<$comp>>() {
                             None => None,
                             Some(comp_arr) => Some(comp_arr.get_array()),
                         },

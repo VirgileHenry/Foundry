@@ -15,12 +15,20 @@ impl<C> ComponentArray<C> {
         return ComponentArray { comp_arr: UnsafeCell::new(PackedArray::<C>::new_with_elem(component, index)) };
     }
 
+    pub fn new_with_vec(component_vec: Vec<C>, start_index: usize) -> ComponentArray<C> {
+        return ComponentArray { comp_arr: UnsafeCell::new(PackedArray::<C>::new_with_vec(component_vec, start_index)) };
+    }
+
     pub fn insert_component(&mut self, component: C, index: usize) -> Option<C> {
         return self.comp_arr.get_mut().insert(component, index);
     }
 
     pub fn append_component(&mut self, component: C, index: usize) {
         self.comp_arr.get_mut().append(component, index);
+    }
+
+    pub fn append_components(&mut self, component_vec: Vec<C>, start_index: usize) {
+        self.comp_arr.get_mut().append_vec(component_vec, start_index);
     }
 
     pub fn get_component(&self, index: usize) -> Option<&C> {

@@ -37,14 +37,19 @@ impl ECS {
     }
 
     pub fn destroy_entity(&mut self, entity: Entity) {
-        // how to know what components this entity possess ?
-        // todo : either entity store components ref, or look for every component
+        todo!();
     }
 
-    // todo : way to create lots of entities with similar components
-
+    pub fn create_entities(&mut self, count: usize) -> Vec<Entity> {
+        let mut result = Vec::with_capacity(count);
+        for i in 0..count {
+            result.push(Entity { id: self.last_entity_id + i });
+        }
+        self.last_entity_id += count;
+        return result;
+    }
     
-    pub fn get_unsafe_component_map(&mut self) -> &mut anymap::Map {
+    pub fn get_unsafe_component_map(&self) -> &anymap::Map {
         return self.components.get_component_map();
     }
 
@@ -87,5 +92,22 @@ macro_rules! create_entity {
         )*
         result_entity
     } };
-    // todo : expand to creating lots of entities at once
+}
+
+#[macro_export]
+macro_rules! create_entities {
+    ($ecs:expr; $amount:expr, $($generators:expr),*) => {
+        {
+            let result_entities = ECS::create_entities(&mut $ecs, $amount);
+            let start_index = match result_entities.get(0) {Some(entity) => entity.id, None => 0};
+            $(
+                let mut comp_vec = Vec::with_capacity($amount);
+                for i in 0..$amount {
+                    comp_vec.push($generators(i));
+                }
+                $ecs.components.add_comps_to_last(start_index, comp_vec);
+            )*
+            result_entities
+        }
+    };
 }
