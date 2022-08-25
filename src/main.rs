@@ -137,11 +137,178 @@ fn main() {
 
     // Code block to measure.
     {
+        // create ecs and entities
         let mut ecs = ECS::new();
         let mut entities: Vec<Entity> = create_entities!(ecs; 1_000,
             |i:usize| -> Position {Position{x:i as f32, y:i as f32}},
             |i:usize| -> Velocity {Velocity { vx: i as f32, vy: i as f32 }} );
-        for (pos, vel) in iterate_over_component_mut!(&ecs; Position, Velocity) {
+
+        // let's debug this
+        for (pos, vel) in {
+            let mut comp_map = ECS::get_unsafe_component_map(&ecs);
+            {
+                use crate::utils::collections::packed_array::IndexedElem;
+                use crate::ecs::component_array::ComponentArray;
+                enum MacroGeneratedComponentsEnum {
+                    Position,
+                    Velocity,
+                    EndOfIterator,
+                }
+                #[automatically_derived]
+                impl ::core::marker::Copy for MacroGeneratedComponentsEnum {}
+                #[automatically_derived]
+                impl ::core::clone::Clone for MacroGeneratedComponentsEnum {
+                    #[inline]
+                    fn clone(&self) -> MacroGeneratedComponentsEnum {
+                        *self
+                    }
+                }
+                fn macro_generated_return_next(
+                    elem: MacroGeneratedComponentsEnum,
+                ) -> MacroGeneratedComponentsEnum {
+                    match elem {
+                        MacroGeneratedComponentsEnum::Position => {
+                            MacroGeneratedComponentsEnum::Velocity
+                        }
+                        MacroGeneratedComponentsEnum::Velocity => {
+                            MacroGeneratedComponentsEnum::EndOfIterator
+                        }
+                        MacroGeneratedComponentsEnum::EndOfIterator => {
+                            MacroGeneratedComponentsEnum::Position
+                        }
+                    }
+                }
+                fn macro_generated_reset() -> MacroGeneratedComponentsEnum {
+                    MacroGeneratedComponentsEnum::Position
+                }
+                struct MacroGeneratedIterableVec<'a, T> {
+                    vec: Option<&'a mut Vec<IndexedElem<T>>>,
+                    index: usize,
+                }
+                struct MacroGeneratedComponentIterator<'a, Position, Velocity> {
+                    current_iterator: MacroGeneratedComponentsEnum,
+                    current_entity: usize,
+                    Position: MacroGeneratedIterableVec<'a, Position>,
+                    Velocity: MacroGeneratedIterableVec<'a, Velocity>,
+                }
+                impl<'a, Position, Velocity> Iterator
+                for MacroGeneratedComponentIterator<'a, Position, Velocity> {
+                    type Item = (&'a mut Position, &'a mut Velocity);
+                    fn next(&mut self) -> Option<Self::Item> {
+                        let Position: usize = MacroGeneratedComponentsEnum::Position
+                            as usize;
+                        let Velocity: usize = MacroGeneratedComponentsEnum::Velocity
+                            as usize;
+                        loop {
+                            match self.current_iterator {
+                                MacroGeneratedComponentsEnum::Position => {
+                                    while match &self.Position.vec {
+                                        None => return None,
+                                        Some(array) => {
+                                            match array.get(self.Position.index) {
+                                                None => return None,
+                                                Some(i_elem) => {
+                                                    if i_elem.index < self.current_entity {
+                                                        true
+                                                    } else {
+                                                        if i_elem.index > self.current_entity {
+                                                            self.current_entity = i_elem.index;
+                                                            self.current_iterator = macro_generated_reset();
+                                                        } else {
+                                                            self
+                                                                .current_iterator = macro_generated_return_next(
+                                                                self.current_iterator,
+                                                            );
+                                                        }
+                                                        false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } {
+                                        self.Position.index += 1;
+                                    }
+                                }
+                                MacroGeneratedComponentsEnum::Velocity => {
+                                    while match &self.Velocity.vec {
+                                        None => return None,
+                                        Some(array) => {
+                                            match array.get(self.Velocity.index) {
+                                                None => return None,
+                                                Some(i_elem) => {
+                                                    if i_elem.index < self.current_entity {
+                                                        true
+                                                    } else {
+                                                        if i_elem.index > self.current_entity {
+                                                            self.current_entity = i_elem.index;
+                                                            self.current_iterator = macro_generated_reset();
+                                                        } else {
+                                                            self
+                                                                .current_iterator = macro_generated_return_next(
+                                                                self.current_iterator,
+                                                            );
+                                                        }
+                                                        false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } {
+                                        self.Velocity.index += 1;
+                                    }
+                                }
+                                _ => {
+                                    let result = Some((
+                                        match &mut self.Position.vec {
+                                            None => return None,
+                                            Some(array) => {
+                                                match array.get_mut(self.Position.index) {
+                                                    None => return None,
+                                                    Some(i_elem) => &mut i_elem.elem,
+                                                }
+                                            }
+                                        },
+                                        match &mut self.Velocity.vec {
+                                            None => return None,
+                                            Some(array) => {
+                                                match array.get_mut(self.Velocity.index) {
+                                                    None => return None,
+                                                    Some(i_elem) => &mut i_elem.elem,
+                                                }
+                                            }
+                                        },
+                                    ));
+                                    self.current_entity += 1;
+                                    self.current_iterator = macro_generated_reset();
+                                    return result;
+                                }
+                            }
+                        }
+                    }
+                }
+                MacroGeneratedComponentIterator::<Position, Velocity> {
+                    current_iterator: macro_generated_reset(),
+                    current_entity: 0,
+                    Position: MacroGeneratedIterableVec {
+                        vec: match comp_map.get::<ComponentArray<Position>>() {
+                            None => None,
+                            Some(comp_arr) => Some(comp_arr.get_array_mut()),
+                        },
+                        index: 0,
+                    },
+                    Velocity: MacroGeneratedIterableVec {
+                        vec: match comp_map.get::<ComponentArray<Velocity>>() {
+                            None => None,
+                            Some(comp_arr) => Some(comp_arr.get_array_mut()),
+                        },
+                        index: 0,
+                    },
+                }
+            }
+        } { // iterate over mut causing the issue, while iterate over component works fine
+            
+            
+            
             // doing stuff on pos and vel
             let some_var = pos.x + pos.y + vel.vx + vel.vy;
         }

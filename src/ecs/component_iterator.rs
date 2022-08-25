@@ -271,7 +271,7 @@ macro_rules! internal_iterate_over_component_mut {
                                 // here, all arrays index have matched the entity, so let's return the components !
                                 let result = Some((
                                     $(
-                                        match &self.$comp.vec {
+                                        match &mut self.$comp.vec {
                                             None => return None, // shouldn't happen, but safety
                                             Some(array) => match array.get_mut(self.$comp.index) {
                                                 None => return None, // shouldn't happen, but safety
