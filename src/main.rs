@@ -145,14 +145,17 @@ fn main() {
 
         // let's debug this
         for (pos, vel) in {
+            // extension of macro generated code (in component_iterator.rs)
             let mut comp_map = ECS::get_unsafe_component_map(&ecs);
             {
+                // use crates so the macro can be called anywhere
                 use crate::utils::collections::packed_array::IndexedElem;
+                // create an enum for the components to iter on
                 use crate::ecs::component_array::ComponentArray;
                 enum MacroGeneratedComponentsEnum {
                     Position,
                     Velocity,
-                    EndOfIterator,
+                    EndOfIterator, // manual last value
                 }
                 #[automatically_derived]
                 impl ::core::marker::Copy for MacroGeneratedComponentsEnum {}
@@ -163,6 +166,7 @@ fn main() {
                         *self
                     }
                 }
+                // create a function to go to next value of enum (iteration)
                 fn macro_generated_return_next(
                     elem: MacroGeneratedComponentsEnum,
                 ) -> MacroGeneratedComponentsEnum {
@@ -178,27 +182,33 @@ fn main() {
                         }
                     }
                 }
+                // create a function to go to first value of enum (rest iterator)
                 fn macro_generated_reset() -> MacroGeneratedComponentsEnum {
                     MacroGeneratedComponentsEnum::Position
                 }
+                // create a struct that holds a vec and an index, kind of a manual iterator
                 struct MacroGeneratedIterableVec<'a, T> {
                     vec: Option<&'a mut Vec<IndexedElem<T>>>,
                     index: usize,
                 }
+                // create the returned struct, that will borrow from the ecs components
                 struct MacroGeneratedComponentIterator<'a, Position, Velocity> {
                     current_iterator: MacroGeneratedComponentsEnum,
                     current_entity: usize,
                     Position: MacroGeneratedIterableVec<'a, Position>,
                     Velocity: MacroGeneratedIterableVec<'a, Velocity>,
                 }
+                // implement the iterator for the returned struct
                 impl<'a, Position, Velocity> Iterator
                 for MacroGeneratedComponentIterator<'a, Position, Velocity> {
                     type Item = (&'a mut Position, &'a mut Velocity);
                     fn next(&mut self) -> Option<Self::Item> {
-                        let Position: usize = MacroGeneratedComponentsEnum::Position
-                            as usize;
-                        let Velocity: usize = MacroGeneratedComponentsEnum::Velocity
-                            as usize;
+                        // the idea of this iterator is :
+                        // look for component 1 on current entity
+                        // if found, look on component 2, component n
+                        // if every component is found, return the tuple
+                        // if one component is not found, go on next entity and restart
+                        // the current iterator follow the created enum to keep track of which component we're in
                         loop {
                             match self.current_iterator {
                                 MacroGeneratedComponentsEnum::Position => {
@@ -258,8 +268,9 @@ fn main() {
                                     }
                                 }
                                 _ => {
+                                    // return component tuple
                                     let result = Some((
-                                        match &mut self.Position.vec {
+                                        match &mut self.Position.vec { // <== error here
                                             None => return None,
                                             Some(array) => {
                                                 match array.get_mut(self.Position.index) {
@@ -286,6 +297,7 @@ fn main() {
                         }
                     }
                 }
+                // create the component and return it 
                 MacroGeneratedComponentIterator::<Position, Velocity> {
                     current_iterator: macro_generated_reset(),
                     current_entity: 0,
@@ -306,9 +318,6 @@ fn main() {
                 }
             }
         } { // iterate over mut causing the issue, while iterate over component works fine
-            
-            
-            
             // doing stuff on pos and vel
             let some_var = pos.x + pos.y + vel.vx + vel.vy;
         }

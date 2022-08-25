@@ -91,11 +91,6 @@ macro_rules! internal_iterate_over_component {
             impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                 type Item = ($(&'a $comp),+);
                 fn next(&mut self) -> Option<Self::Item> {
-                    // a bit tricky but allows static enums as values :
-                    // create usize vars of name comp that store their enums values
-                    $(
-                        let $comp: usize = MacroGeneratedComponentsEnum::$comp as usize;
-                    )+
                     loop {
                         match self.current_iterator {
                             $(
@@ -220,11 +215,6 @@ macro_rules! internal_iterate_over_component_mut {
             impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                 type Item = ($(&'a mut $comp),+);
                 fn next(&mut self) -> Option<Self::Item> {
-                    // a bit tricky but allows static enums as values :
-                    // create usize vars of name comp that store their enums values
-                    $(
-                        let $comp: usize = MacroGeneratedComponentsEnum::$comp as usize;
-                    )+
                     loop {
                         match self.current_iterator {
                             $(
