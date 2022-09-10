@@ -117,55 +117,65 @@ struct PhysicSystem {
     gravity_y: f32,
 }
 
+
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
-        for comps in iterate_over_component!(components; Position, Velocity) {
-            let (pos, vel) = comps; // unpack
-            println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
-            // try iterate over each position
-            
+        let mut i = 0;
+        for (pos, vel) in iterate_over_component_mut!(components; Position, Velocity) {
+            vel.vx += self.gravity_x * delta;
+            vel.vy += self.gravity_y * delta;
+            pos.x += vel.vx * delta;
+            pos.y += vel.vy * delta;
+
+            // simple collision
+            if pos.y < 0.0 {
+                pos.y = -pos.y;
+                vel.vy = -0.8 * vel.vy;
+            }
+            i += 1;
+
+            // println!("pos : {} {}     vel : {} {}", pos.x, pos.y, vel.vx, vel.vy);
         }
+        // println!("{}", delta);
     }
 }
 
 
 #[test]
 fn system_test() {
-    let physics: PhysicSystem = PhysicSystem { gravity_x: 0.0, gravity_y: -9.81 };
-    let physic_sys = System::new(Box::new(physics), UpdateFrequency::Fixed(0.05));
-    let mut ecs = ECS::new();
-    ecs.register_system(physic_sys, 0);
-}
-
-
-fn main() {
-
+    
     use std::time::Instant;
-    let now = Instant::now();
 
     // Code block to measure.
-    {
-        // create ecs and entities
-        let mut ecs = ECS::new();
-        let mut entities: Vec<Entity> = create_entities!(ecs; 100,
-            |i:usize| -> Position {Position{x:i as f32, y:i as f32}},
-            |i:usize| -> Velocity {Velocity { vx: i as f32, vy: i as f32 }} );
+    // create ecs and entities
+    let mut ecs = ECS::new();
+    let mut entity = create_entities!(ecs; 1_000_000, |i:usize| { return Position{x:0.0, y:5.0}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
 
-        let mut i:u64 = 0;
-        for pos in iterate_over_component_mut!(ecs.components; Position) {
-            for vel in iterate_over_component_mut!(ecs.components; Velocity) {
-                i += 1;
-            }
-        }
-        println!("{}", i);
+    let physics = PhysicSystem {
+        gravity_x: 0.0,
+        gravity_y: -9.81,
+    };
 
+    let physic_system = System::new(Box::new(physics), UpdateFrequency::Fixed(0.002));
+
+    ecs.register_system(physic_system, 1);
+
+    let mut prev = Instant::now();
+
+    loop {
+        let mut delta = prev.elapsed().as_secs_f64();
+
+        delta = 0.0001;
+
+        println!("{}", delta);
+
+        ecs.update(delta as f32);
+        let pos = ecs.get_component::<Position>(&entity[0]).unwrap();
         
+        println!("pos : {} {}", pos.x, pos.y);
+
+        prev = Instant::now();
     }
-
-    let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
-    
-
 
 }
 
