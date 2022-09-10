@@ -1,65 +1,31 @@
 
+#[macro_export]
+macro_rules! fn_internal_get_next_elem {
+    ($elem_type:ty; $first:path, $($elems:path),*) => {
+        fn macro_generated_return_next(elem: $elem_type) -> $elem_type {
+            match elem {
+                $first => 
+                $($elems, $elems =>)*
+                $first
+            }
+        }
+
+        fn macro_generated_reset() -> $elem_type {
+            $first
+        }
+    }
+}
+
 
 
 #[macro_export]
 macro_rules! iterate_over_component {
-    ($ecs:expr; $($comp:ident),+) => {
-        {
-            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
-            let mut comp_map = ECS::get_unsafe_component_map($ecs);
-
-            internal_iterate_over_component!(comp_map; $($comp),+)
-        }
-    }
-}
-
-#[macro_export]
-macro_rules! iterate_over_component_from_sys {
     ($components:expr; $($comp:ident),+) => {
         {
             use crate::ecs::component_table::ComponentTable;
-            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
-            let mut comp_map = ComponentTable::get_component_map($components);
-
-            internal_iterate_over_component!(comp_map; $($comp),+)
-        }
-    }
-}
-
-
-#[macro_export]
-macro_rules! iterate_over_component_mut {
-    ($ecs:expr; $($comp:ident),+) => {
-        {
-            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
-            let mut comp_map = ECS::get_unsafe_component_map($ecs);
-
-            internal_iterate_over_component_mut!(comp_map; $($comp),+)
-        }
-    }
-}
-
-#[macro_export]
-macro_rules! iterate_over_component_from_sys_mut {
-    ($components:expr; $($comp:ident),+) => {
-        {
-            use crate::ecs::component_table::ComponentTable;
-            // get the comp map once to avoid multi borrow issues (we have unsafe cell for vectors)
-            let mut comp_map = ComponentTable::get_component_map($components);
-
-            internal_iterate_over_component_mut!(comp_map; $($comp),+)
-        }
-    }
-}
-
-
-#[macro_export]
-macro_rules! internal_iterate_over_component {
-    ($comp_map:expr; $($comp:ident),+) => {
-        {
-            // use statments to import everything that is needed
             use crate::utils::collections::packed_array::IndexedElem;
-            use crate::ecs::component_array::ComponentArray;
+            use std::slice::Iter;
+
 
             // use an enum to get an id per component !
             #[derive(Copy, Clone)]
@@ -70,107 +36,73 @@ macro_rules! internal_iterate_over_component {
                 EndOfIterator
             }
 
+            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
+                current_entity: usize,
+                current_component: MacroGeneratedComponentsEnum,
+                $(
+                    $comp: std::iter::Peekable<Iter<'a, IndexedElem<$comp>>>
+                ),+
+            }
+
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
-
-            // struct to pack both a vec and a index
-            struct MacroGeneratedIterableVec<'a, T> {
-                vec: Option<&'a Vec<IndexedElem<T>>>,
-                index: usize,
-            }
-            // create the result struct that will act as an iterator
-            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
-                current_iterator: MacroGeneratedComponentsEnum,
-                current_entity: usize,
-                $(
-                    $comp: MacroGeneratedIterableVec<'a, $comp>,
-                )+
-            }
-
-            // implement the iterator 
+            
             impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                 type Item = ($(&'a $comp),+);
                 fn next(&mut self) -> Option<Self::Item> {
                     loop {
-                        match self.current_iterator {
+                        match self.current_component {
                             $(
                                 MacroGeneratedComponentsEnum::$comp => {
-                                    // checking for first component
-                                    while match self.$comp.vec {
+                                    while match &self.$comp.peek() {
                                         None => return None,
-                                        Some(array) => {
-                                            match array.get(self.$comp.index) {
-                                                None => return None, // out of element on first vec, end of iterator
-                                                Some(i_elem) => {
-                                                    // use this to update values
-                                                    if i_elem.index < self.current_entity {
-                                                        // true to keep the while loop and increment index
-                                                        true
-                                                    }
-                                                    else {
-                                                        // if we are bigger than current entity, update entity to match ourselves
-                                                        if i_elem.index > self.current_entity {
-                                                            // update entity to align to our component
-                                                            self.current_entity = i_elem.index;
-                                                            // reset current iterator because we went to next entity, so need to get again all components
-                                                            self.current_iterator = macro_generated_reset();
-                                                            // note that the while loop will end, so the loop will come back to this point
-                                                            // except it will then go to the else and increment the current iterator
-                                                            // this is a design choice so this code is similar in every arm of the match on self.current_iterator
-                                                        }
-                                                        else {
-                                                            // check next iterator, we are at the component of current entity
-                                                            self.current_iterator = macro_generated_return_next(self.current_iterator);
-                                                        }
-                                                        false // go to next iterator, so end while loop
-                                                    }
-                                                },
+                                        Some(elem) => {
+                                            if elem.index > self.current_entity {
+                                                self.current_entity = elem.index;
+                                                false
+                                            }
+                                            else if elem.index == self.current_entity {
+                                                self.current_component = macro_generated_return_next(self.current_component);
+                                                false
+                                            }
+                                            else {
+                                                true
                                             }
                                         }
                                     } {
-                                        // advance current index of array 1 to match with current entity
-                                        self.$comp.index += 1;
+                                        self.$comp.next();
                                     }
                                 }
                             )+
-                            _ =>{
-                                                    // here, all arrays index have matched the entity, so let's return the components !
-                                let result = Some((
-                                    $(
-                                        match self.$comp.vec {
-                                            None => return None, // shouldn't happen, but safety
-                                            Some(array) => match array.get(self.$comp.index) {
-                                                None => return None, // shouldn't happen, but safety
-                                                Some(i_elem) => &i_elem.elem,
-                                            }
-                                        }
-                                    ),+
-                                ));
-                                // update to next entity for iterator
+                            MacroGeneratedComponentsEnum::EndOfIterator => {
+                                let result = ($(
+                                    match self.$comp.next() {
+                                        Some(elem) => & elem.elem,
+                                        None => return None,
+                                    }
+                                ),+);
                                 self.current_entity += 1;
-                                // reset iterator counter
-                                self.current_iterator = macro_generated_reset();
-                            
-                                return result;
+                                self.current_component = macro_generated_reset();
+                                return Some(result);
                             }
                         }
                     }
                 }
             }
 
-            MacroGeneratedComponentIterator::<$($comp),+> {
-                current_iterator: macro_generated_reset(),
+            let mut result = MacroGeneratedComponentIterator {
                 current_entity: 0,
+                current_component: macro_generated_reset(),
                 $(
-                    $comp: MacroGeneratedIterableVec {
-                        vec: match $comp_map.get::<ComponentArray<$comp>>() {
-                            None => None,
-                            Some(comp_arr) => Some(comp_arr.get_array()),
-                        },
-                        index: 0,
-                    },
-                )+
-            }
+                    $comp: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        Some(comp_arr) => comp_arr.iter().peekable(),
+                        None => [].iter().peekable(),
+                    }
+                ),+
+            };
+
+            result
+
         }
     };
 }
@@ -178,12 +110,13 @@ macro_rules! internal_iterate_over_component {
 
 
 #[macro_export]
-macro_rules! internal_iterate_over_component_mut {
-    ($comp_map:expr; $($comp:ident),+) => {
+macro_rules! iterate_over_component_mut {
+    ($components:expr; $($comp:ident),+) => {
         {
-            // use statments to import everything that is needed
+            use crate::ecs::component_table::ComponentTable;
             use crate::utils::collections::packed_array::IndexedElem;
-            use crate::ecs::component_array::ComponentArray;
+            use std::slice::IterMut;
+
 
             // use an enum to get an id per component !
             #[derive(Copy, Clone)]
@@ -194,107 +127,118 @@ macro_rules! internal_iterate_over_component_mut {
                 EndOfIterator
             }
 
+            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
+                current_entity: usize,
+                current_component: MacroGeneratedComponentsEnum,
+                $(
+                    $comp: std::iter::Peekable<IterMut<'a, IndexedElem<$comp>>>
+                ),+
+            }
+
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
-
-            // struct to pack both a vec and a index
-            struct MacroGeneratedIterableVec<'a, T> {
-                vec: Option<&'a mut Vec<IndexedElem<T>>>,
-                index: usize,
-            }
-            // create the result struct that will act as an iterator
-            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
-                current_iterator: MacroGeneratedComponentsEnum,
-                current_entity: usize,
-                $(
-                    $comp: MacroGeneratedIterableVec<'a, $comp>,
-                )+
-            }
-
-            // implement the iterator 
+            
             impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                 type Item = ($(&'a mut $comp),+);
                 fn next(&mut self) -> Option<Self::Item> {
                     loop {
-                        match self.current_iterator {
+                        match self.current_component {
                             $(
                                 MacroGeneratedComponentsEnum::$comp => {
-                                    // checking for first component
-                                    while match &self.$comp.vec {
+                                    while match &self.$comp.peek() {
                                         None => return None,
-                                        Some(array) => {
-                                            match array.get(self.$comp.index) {
-                                                None => return None, // out of element on first vec, end of iterator
-                                                Some(i_elem) => {
-                                                    // use this to update values
-                                                    if i_elem.index < self.current_entity {
-                                                        // true to keep the while loop and increment index
-                                                        true
-                                                    }
-                                                    else {
-                                                        // if we are bigger than current entity, update entity to match ourselves
-                                                        if i_elem.index > self.current_entity {
-                                                            // update entity to align to our component
-                                                            self.current_entity = i_elem.index;
-                                                            // reset current iterator because we went to next entity, so need to get again all components
-                                                            self.current_iterator = macro_generated_reset();
-                                                            // note that the while loop will end, so the loop will come back to this point
-                                                            // except it will then go to the else and increment the current iterator
-                                                            // this is a design choice so this code is similar in every arm of the match on self.current_iterator
-                                                        }
-                                                        else {
-                                                            // check next iterator, we are at the component of current entity
-                                                            self.current_iterator = macro_generated_return_next(self.current_iterator);
-                                                        }
-                                                        false // go to next iterator, so end while loop
-                                                    }
-                                                },
+                                        Some(elem) => {
+                                            if elem.index > self.current_entity {
+                                                self.current_entity = elem.index;
+                                                false
+                                            }
+                                            else if elem.index == self.current_entity {
+                                                self.current_component = macro_generated_return_next(self.current_component);
+                                                false
+                                            }
+                                            else {
+                                                true
                                             }
                                         }
                                     } {
-                                        // advance current index of array 1 to match with current entity
-                                        self.$comp.index += 1;
+                                        self.$comp.next();
                                     }
                                 }
                             )+
-                            _ =>{
-                                // here, all arrays index have matched the entity, so let's return the components !
-                                let result = Some((
-                                    $(
-                                        match &mut self.$comp.vec {
-                                            None => return None, // shouldn't happen, but safety
-                                            Some(array) => match array.get_mut(self.$comp.index) {
-                                                None => return None, // shouldn't happen, but safety
-                                                Some(i_elem) => &mut i_elem.elem,
-                                            }
-                                        }
-                                    ),+
-                                ));
-                                // update to next entity for iterator
+                            MacroGeneratedComponentsEnum::EndOfIterator => {
+                                let result = ($(
+                                    match self.$comp.next() {
+                                        Some(elem) => & mut elem.elem,
+                                        None => return None,
+                                    }
+                                ),+);
                                 self.current_entity += 1;
-                                // reset iterator counter
-                                self.current_iterator = macro_generated_reset();
-                            
-                                return result;
+                                self.current_component = macro_generated_reset();
+                                return Some(result);
                             }
                         }
                     }
                 }
             }
 
-            MacroGeneratedComponentIterator::<$($comp),+> {
-                current_iterator: macro_generated_reset(),
+            let mut result = MacroGeneratedComponentIterator {
                 current_entity: 0,
+                current_component: macro_generated_reset(),
                 $(
-                    $comp: MacroGeneratedIterableVec {
-                        vec: match $comp_map.get::<ComponentArray<$comp>>() {
-                            None => None,
-                            Some(comp_arr) => Some(comp_arr.get_array_mut()),
-                        },
-                        index: 0,
-                    },
-                )+
-            }
+                    $comp: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        Some(comp_arr) => comp_arr.iter_mut().peekable(),
+                        None => [].iter_mut().peekable(),
+                    }
+                ),+
+            };
+
+            result
+
         }
     };
 }
+
+/*
+some code to make the iterator with functions :
+
+fn main() {
+    let mut v: Vec<(f32, usize)> = vec![(2.4, 0), (3.5, 1), (4.2, 4)];
+    let mut w: Vec<(u64, usize)> = vec![(2, 1), (3, 4), (4, 5)];
+    eprintln!("v: {:?} w: {:?}", v, w);
+
+    let mut iv = v.iter_mut().peekable();
+    let mut ip = w.iter_mut().peekable();
+
+    let merged = std::iter::from_fn(|| loop {
+        let advance_on = if let Some(i1) = iv.peek().map(|(_, i)| i) {
+            if let Some(i2) = ip.peek().map(|(_, i)| i) {
+                if i1 < i2 {
+                    1
+                } else if i1 > i2 {
+                    2
+                } else {
+                    let a = iv.next().unwrap();
+                    let b = ip.next().unwrap();
+                    return Some((&mut a.0, &mut b.0));
+                }
+            } else {
+                return None;
+            }
+        } else {
+            return None;
+        };
+        if advance_on == 1 {
+            iv.next();
+        } else {
+            ip.next();
+        }
+    });
+
+    for (pos, speed) in merged {
+        *pos += 1.0;
+        *speed += 2;
+    }
+    eprintln!("v: {:?} w: {:?}", v, w);
+}
+
+*/
