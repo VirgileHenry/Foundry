@@ -1,9 +1,8 @@
 extern crate anymap;
-use crate::utils::collections::packed_array::IndexedElem;
-use crate::ecs::{
+use crate::{ecs::{
     entity::Entity,
     component_array::ComponentArray,
-};
+}, utils::collections::packed_array::IndexedElem};
 
 pub struct ComponentTable {
     components: anymap::Map,
@@ -72,6 +71,24 @@ impl ComponentTable {
         return &self.components;
     }
 
+    pub fn get_component_map_mut(&mut self) -> &mut anymap::Map {
+        return &mut self.components;
+    }
+
+    pub fn get_component_array<C: 'static>(&self) -> Option<&Vec<IndexedElem<C>>> {
+        return match self.components.get::<ComponentArray<C>>() {
+            Some(comp_arr) => Some(comp_arr.get_array()),
+            None => None,
+        }
+    }
+
+    pub fn get_component_array_mut<C: 'static>(&self) -> Option<&mut Vec<IndexedElem<C>>> {
+        return match self.components.get::<ComponentArray<C>>() {
+            Some(comp_arr) => Some(comp_arr.unsafe_get_array_mut()),
+            None => None,
+        }
+    }
+
     pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
         return match self.components.get::<ComponentArray<C>>() {
             None => None,
@@ -94,22 +111,3 @@ impl ComponentTable {
     }
 
 }
-
-
-#[macro_export]
-macro_rules! fn_internal_get_next_elem {
-    ($elem_type:ty; $first:path, $($elems:path),*) => {
-        fn macro_generated_return_next(elem: $elem_type) -> $elem_type {
-            match elem {
-                $first => 
-                $($elems, $elems =>)*
-                $first
-            }
-        }
-
-        fn macro_generated_reset() -> $elem_type {
-            $first
-        }
-    }
-}
-

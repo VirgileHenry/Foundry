@@ -42,11 +42,6 @@ impl ECS {
     }
     
     #[inline]
-    pub fn get_unsafe_component_map(&self) -> &anymap::Map {
-        return self.components.get_component_map();
-    }
-
-    #[inline]
     pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
         return self.components.add_component(entity, component);
     }
