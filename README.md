@@ -40,7 +40,7 @@ struct Velocity {
 }
 ```
 
-Components can be added, read and removed to entities :
+Components can be added, read and removed from entities :
 
 ```rust
 let mut world = World::new();
@@ -55,7 +55,7 @@ There are also macros that allow creation of one or multiple entities with compo
 ```rust
 let mut world = World::new();
 let entity = create_entity!(world.components; Position{x:0.0, y:0.0}, Velocity{vx:0.0, vy:0.0});
-// for multiple components, pass in generator functions to give individual initial values
+// for multiple components, pass in generator functions to give individual components initial values
 let entities = create_entities!(world.components; 100, |i:usize|{Position{x:i as f32, y:i as f32}});
 ```
 
@@ -95,6 +95,22 @@ for (pos, vel) in iterate_over_component_mut!(world.components; Position, Veloci
 With all this, we can for example implement basic gravity :
 
 ```rust
+// a position component
+struct Position {
+    x: f32,
+    y: f32,
+}
+// a velocity component
+struct Velocity {
+    vx: f32,
+    vy: f32,
+}
+
+struct PhysicSystem {
+    gravity_x: f32,
+    gravity_y: f32,
+}
+
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
         for (pos, vel) in iterate_over_component_mut!(components; Position, Velocity) {
@@ -111,6 +127,35 @@ impl Updatable for PhysicSystem {
         }
     }
 }
+
+fn main() {
+    
+    use std::time::Instant;
+    // create ecs and entities
+    let mut ecs = World::new();
+    let mut entity = create_entities!(ecs; 1_000_000, |i:usize| { return Position{x:0.0, y:5.0}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
+
+    let physics = PhysicSystem {
+        gravity_x: 0.0,
+        gravity_y: -9.81,
+    };
+
+    let physic_system = System::new(Box::new(physics), UpdateFrequency::Fixed(0.002));
+
+    ecs.register_system(physic_system, 1);
+
+    let mut prev = Instant::now();
+
+    loop {
+        let mut delta = prev.elapsed().as_secs_f64();
+
+        ecs.update(delta as f32);
+        
+        prev = Instant::now();
+    }
+
+}
+
 ```
 
 Please feel free to play around, and report any bugs or issues, or even optimisations ! 
