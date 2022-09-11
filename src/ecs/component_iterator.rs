@@ -1,4 +1,4 @@
-
+/// macro used internally in the iterator macros.
 #[macro_export]
 macro_rules! fn_internal_get_next_elem {
     ($elem_type:ty; $first:path, $($elems:path),*) => {
@@ -17,7 +17,9 @@ macro_rules! fn_internal_get_next_elem {
 }
 
 
-
+/// Creates an iterator over any n-uplets of components. 
+/// For example, we can iterate over every entity that have both a position and a velocity like so:
+/// ```for (pos, vel) in iterate_over_component!(components; Position, Velocity) { /* */ }```
 #[macro_export]
 macro_rules! iterate_over_component {
     ($components:expr; $($comp:ident),+) => {
@@ -122,7 +124,11 @@ macro_rules! iterate_over_component {
 }
 
 
-
+/// Creates an iterator over any n-uplets of components. 
+/// For example, we can iterate over every entity that have both a position and a velocity like so:
+/// ```for (pos, vel) in iterate_over_component!(components; Position, Velocity) { /* */ }```
+/// Warning : there is currently a safety issue that allows to make an inner loop also iterating over the same component type.
+/// it is possible to do ```for pos1 in iterate_over_component_mut!(comp, Position) { for pos2 in iterate_over_component_mut!(comp, Position) { /* pos1 and pos2 refer to the same data at some point */} } ```
 #[macro_export]
 macro_rules! iterate_over_component_mut {
     ($components:expr; $($comp:ident),+) => {
