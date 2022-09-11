@@ -24,8 +24,8 @@ macro_rules! fn_internal_get_next_elem {
 macro_rules! iterate_over_component {
     ($components:expr; $($comp:ident),+) => {
         {
-            use Foundry::ecs::component_table::ComponentTable;
-            use Foundry::utils::collections::packed_array::IndexedElem;
+            use foundry::ecs::component_table::ComponentTable;
+            use foundry::utils::collections::packed_array::IndexedElem;
             use std::slice::Iter;
 
 
@@ -47,7 +47,7 @@ macro_rules! iterate_over_component {
                 ),+
             }
 
-            use Foundry::fn_internal_get_next_elem;
+            use foundry::fn_internal_get_next_elem;
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
             
@@ -133,8 +133,8 @@ macro_rules! iterate_over_component {
 macro_rules! iterate_over_component_mut {
     ($components:expr; $($comp:ident),+) => {
         {
-            use Foundry::ecs::component_table::ComponentTable;
-            use Foundry::utils::collections::packed_array::IndexedElem;
+            use foundry::ecs::component_table::ComponentTable;
+            use foundry::utils::collections::packed_array::IndexedElem;
             use std::slice::IterMut;
 
 
@@ -156,7 +156,7 @@ macro_rules! iterate_over_component_mut {
                 ),+
             }
 
-            use Foundry::fn_internal_get_next_elem;
+            use foundry::fn_internal_get_next_elem;
 
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
