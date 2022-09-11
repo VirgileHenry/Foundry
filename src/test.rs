@@ -179,3 +179,15 @@ fn system_test() {
 
 }
 
+#[test]
+fn entity_active_test() {
+    let mut world = World::new();
+    let entity = world.create_entity();
+    world.add_component::<Position>(&entity, Position{x:0.0, y:0.0});
+    let entity1 = world.create_entity();
+    world.add_component::<Position>(&entity1, Position{x:0.0, y:0.0});
+    world.set_entity_active(&entity, false);
+    for pos in iterate_over_component!(world.components; Position) {
+        println!("found pos !"); // should happen once, because entity is deactivated
+    }
+}

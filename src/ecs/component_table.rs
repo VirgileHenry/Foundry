@@ -6,36 +6,63 @@ use crate::{ecs::{
 
 pub struct ComponentTable {
     components: anymap::Map,
-    last_entity_id: usize,
+    active_entities: Vec<u8>,
+    entity_count: usize,
 }
 
 impl ComponentTable {
     pub fn new() -> ComponentTable {
         return ComponentTable {
             components: anymap::Map::new(),
-            last_entity_id: 1,
+            active_entities: vec!(),
+            entity_count: 0,
         };
     }
 
     pub fn create_entity(&mut self) -> Entity {
         let result = Entity {
-            id: self.last_entity_id
+            id: self.entity_count
         };
-        self.last_entity_id += 1;
+        if self.active_entities.len() * 8 <= self.entity_count {
+            self.active_entities.push(0b1111_1111); // u8 max values so all 1s
+        }
+        self.entity_count += 1;
         result
     }
 
     pub fn destroy_entity(&mut self, entity: Entity) {
-        todo!();
+        // this is bad, we move the entity and deactivate it.
+        // need to find a good way to remove all it's components to clean memory
+        self.set_entity_active(&entity, false);
     }
 
     pub fn create_entities(&mut self, count: usize) -> Vec<Entity> {
         let mut result = Vec::with_capacity(count);
         for i in 0..count {
-            result.push(Entity { id: self.last_entity_id + i });
+            result.push(Entity { id: self.entity_count + i });
         }
-        self.last_entity_id += count;
+        if self.active_entities.len() * 8 <= self.entity_count + count - 1 {
+            let mut vec: Vec<u8> = vec!(0b1111_1111; (self.entity_count + count - self.active_entities.len() * 8) / 8);
+            self.active_entities.append(&mut vec);
+        }
+        self.entity_count += count;
         result
+    }
+
+    pub fn set_entity_active(&mut self, entity: &Entity, active: bool) {
+        match self.active_entities.get_mut(entity.id / 8) {
+            Some(pack) => {
+                if active {
+                    // set the bit corresponding to the entity to 1
+                    *pack |= 1 << (entity.id % 8);
+                }
+                else {
+                    // set the bit corresponding to the entity to 0
+                    *pack &= !(1 << (entity.id % 8));
+                }
+            }
+            None => {} // should never happen, but in that case the given entity is not valid
+        }
     }
 
     pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
@@ -103,6 +130,10 @@ impl ComponentTable {
         }
     }
 
+    pub fn get_active_entities(&self) -> &Vec<u8> {
+        return &self.active_entities;
+    }
+
     pub fn remove_component<C: 'static>(&mut self, entity: &Entity) -> Option<C> {
         return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
@@ -110,4 +141,35 @@ impl ComponentTable {
         }
     }
 
+}
+
+// macros to create entities with any number of components
+#[macro_export]
+macro_rules! create_entity {
+    ($comp_table:expr) => { ComponentTable::create_entity(&mut $comp_table) };
+    ($comp_table:expr; $($comp:expr),*) => { {
+        let result_entity = ComponentTable::create_entity(&mut $comp_table);
+        $(
+            $comp_table.add_comp_to_last(&result_entity, $comp);
+        )*
+        result_entity
+    } };
+}
+
+#[macro_export]
+macro_rules! create_entities {
+    ($comp_table:expr; $amount:expr, $($generators:expr),*) => {
+        {
+            let result_entities = ComponentTable::create_entities(&mut $comp_table, $amount);
+            let start_index = match result_entities.get(0) {Some(entity) => entity.id, None => 0};
+            $(
+                let mut comp_vec = Vec::with_capacity($amount);
+                for i in 0..$amount {
+                    comp_vec.push($generators(i));
+                }
+                $comp_table.add_comps_to_last(start_index, comp_vec);
+            )*
+            result_entities
+        }
+    };
 }

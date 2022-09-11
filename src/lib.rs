@@ -1,2 +1,2 @@
 pub mod ecs;
-mod utils;
+pub mod utils;

@@ -1,5 +1,3 @@
-use anymap::AnyMap;
-
 use crate::utils::collections::packed_array::PackedArray;
 
 use super::{
@@ -10,7 +8,7 @@ use super::{
 
 
 
-pub struct ECS {
+pub struct World {
     // can be considerer to be a world
     // all the components on the entities
     pub components: ComponentTable, // todo : private
@@ -18,9 +16,9 @@ pub struct ECS {
     systems: PackedArray<System>,
 }
 
-impl ECS {
-    pub fn new() -> ECS {
-        return ECS {  
+impl World {
+    pub fn new() -> World {
+        return World {  
             components: ComponentTable::new(),
             systems: PackedArray::new(),
         };
@@ -33,12 +31,17 @@ impl ECS {
 
     #[inline]
     pub fn destroy_entity(&mut self, entity: Entity) {
-        todo!();
+        self.components.destroy_entity(entity);
     }
 
     #[inline]
     pub fn create_entities(&mut self, count: usize) -> Vec<Entity> {
         self.components.create_entities(count)
+    }
+
+    #[inline]
+    pub fn set_entity_active(&mut self, entity: &Entity, active: bool) {
+        self.components.set_entity_active(entity, active);
     }
     
     #[inline]
@@ -74,33 +77,3 @@ impl ECS {
     }
 }
 
-// macros to create entities with any number of components
-#[macro_export]
-macro_rules! create_entity {
-    ($ecs:expr) => { ECS::create_entity(&mut $ecs) };
-    ($ecs:expr; $($comp:expr),*) => { {
-        let result_entity = ECS::create_entity(&mut $ecs);
-        $(
-            $ecs.components.add_comp_to_last(&result_entity, $comp);
-        )*
-        result_entity
-    } };
-}
-
-#[macro_export]
-macro_rules! create_entities {
-    ($ecs:expr; $amount:expr, $($generators:expr),*) => {
-        {
-            let result_entities = ECS::create_entities(&mut $ecs, $amount);
-            let start_index = match result_entities.get(0) {Some(entity) => entity.id, None => 0};
-            $(
-                let mut comp_vec = Vec::with_capacity($amount);
-                for i in 0..$amount {
-                    comp_vec.push($generators(i));
-                }
-                $ecs.components.add_comps_to_last(start_index, comp_vec);
-            )*
-            result_entities
-        }
-    };
-}

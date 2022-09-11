@@ -1,6 +1,6 @@
-pub mod ecs;
+pub mod world;
 pub mod entity;
 pub mod system;
-mod component_table;
+pub mod component_table;
+pub mod component_iterator;
 mod component_array;
-mod component_iterator;
