@@ -83,6 +83,14 @@ impl World {
         self.systems.insert(system, index);
     }
 
+    pub fn get_system(&self, index: usize) -> Option<&System> {
+        self.systems.get(index)
+    }
+
+    pub fn get_system_mut(&mut self, index: usize) -> Option<&mut System> {
+        self.systems.get_mut(index)
+    }
+
     /// Call an update on every registered systems.
     pub fn update(&mut self, delta: f32) {
         // update every system in order
