@@ -61,7 +61,7 @@ impl World {
 
     /// Get a reference to a component of the given type of an entity.
     #[inline]
-    pub fn get_component<C: 'static>(&mut self, entity: &Entity) -> Option<&C> {
+    pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
         return self.components.get_component::<C>(entity);
     }
 
@@ -83,10 +83,12 @@ impl World {
         self.systems.insert(system, index);
     }
 
+    /// Get a reference to a registered system by id.
     pub fn get_system(&self, index: usize) -> Option<&System> {
         self.systems.get(index)
     }
 
+    /// Get a mutable reference to a regsistered system by id.
     pub fn get_system_mut(&mut self, index: usize) -> Option<&mut System> {
         self.systems.get_mut(index)
     }
