@@ -167,8 +167,13 @@ impl ComponentTable {
 /// ```let entity = create_entity!(comp_table; Position{x:0, y:0}, Velocity{vx:0, vy:0});```
 #[macro_export]
 macro_rules! create_entity {
-    ($comp_table:expr) => { ComponentTable::create_entity(&mut $comp_table) };
+    ($comp_table:expr) => { 
+        use foundry::ecs::component_table::ComponentTable;
+        ComponentTable::create_entity(&mut $comp_table)
+    };
     ($comp_table:expr; $($comp:expr),*) => { {
+        use foundry::ecs::component_table::ComponentTable;
+
         let result_entity = ComponentTable::create_entity(&mut $comp_table);
         $(
             $comp_table.add_comp_to_last(&result_entity, $comp);
@@ -185,6 +190,7 @@ macro_rules! create_entity {
 macro_rules! create_entities {
     ($comp_table:expr; $amount:expr, $($generators:expr),*) => {
         {
+            use foundry::ecs::component_table::ComponentTable;
             let result_entities = ComponentTable::create_entities(&mut $comp_table, $amount);
             let start_index = match result_entities.get(0) {Some(entity) => entity.id, None => 0};
             $(
