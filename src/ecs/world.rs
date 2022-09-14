@@ -1,5 +1,5 @@
 use crate::utils::collections::packed_array::PackedArray;
-
+use std::any::Any;
 use super::{
     component_table::ComponentTable,
     system::System,
@@ -94,10 +94,10 @@ impl World {
     }
 
     /// Call an update on every registered systems.
-    pub fn update(&mut self, delta: f32) {
+    pub fn update(&mut self, delta: f32, user_data: &mut dyn Any) {
         // update every system in order
         for system in self.systems.iter_mut() {
-            system.elem.update(&mut self.components, delta);
+            system.elem.update(&mut self.components, delta, user_data);
         }
     }
 }
