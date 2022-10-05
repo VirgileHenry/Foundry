@@ -2,14 +2,14 @@ extern crate anymap;
 use crate::{ecs::{
     entity::Entity,
     component_array::ComponentArray,
-}, utils::collections::packed_array::IndexedElem};
+}, utils::collections::{packed_array::IndexedElem, bool_vec::BoolVec}};
 
 /// Stores all the components of the entites packed up together to ease iteration.
 pub struct ComponentTable {
     /// Anymap of the components where keys are component types, values are components arrays.
     components: anymap::Map,
     /// Vec keeping track of all the active entities.
-    active_entities: Vec<u8>,
+    active_entities: BoolVec,
     /// the count of how many entities have been created, does not count the deleted ones.
     entity_count: usize,
 }
@@ -20,7 +20,7 @@ impl ComponentTable {
     pub fn new() -> ComponentTable {
         return ComponentTable {
             components: anymap::Map::new(),
-            active_entities: vec!(),
+            active_entities: BoolVec::new(),
             entity_count: 0,
         };
     }
@@ -30,9 +30,7 @@ impl ComponentTable {
         let result = Entity {
             id: self.entity_count
         };
-        if self.active_entities.len() * 8 <= self.entity_count {
-            self.active_entities.push(0b1111_1111); // u8 max values so all 1s
-        }
+        self.active_entities.push(true);
         self.entity_count += 1;
         result
     }
@@ -51,10 +49,7 @@ impl ComponentTable {
         for i in 0..count {
             result.push(Entity { id: self.entity_count + i });
         }
-        if self.active_entities.len() * 8 <= self.entity_count + count - 1 {
-            let mut vec: Vec<u8> = vec!(0b1111_1111; (self.entity_count + count - self.active_entities.len() * 8) / 8);
-            self.active_entities.append(&mut vec);
-        }
+        self.active_entities.append(BoolVec::all_true(count));
         self.entity_count += count;
         result
     }
@@ -62,19 +57,7 @@ impl ComponentTable {
     /// Set an entity as active or not.
     /// Inactive entities still exists, but are ignored by iterators over components and are not updated.
     pub fn set_entity_active(&mut self, entity: &Entity, active: bool) {
-        match self.active_entities.get_mut(entity.id / 8) {
-            Some(pack) => {
-                if active {
-                    // set the bit corresponding to the entity to 1
-                    *pack |= 1 << (entity.id % 8);
-                }
-                else {
-                    // set the bit corresponding to the entity to 0
-                    *pack &= !(1 << (entity.id % 8));
-                }
-            }
-            None => {} // should never happen, but in that case the given entity is not valid
-        }
+        self.active_entities.set(entity.id, active);
     }
 
     /// Add the given component to the given entity. 
@@ -147,7 +130,7 @@ impl ComponentTable {
     }
 
     /// Get a reference to the vec containing the active entities.
-    pub fn get_active_entities(&self) -> &Vec<u8> {
+    pub fn get_active_entities(&self) -> &BoolVec {
         return &self.active_entities;
     }
 
