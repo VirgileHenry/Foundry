@@ -41,7 +41,7 @@ macro_rules! iterate_over_component {
             struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                 current_entity: usize,
                 current_component: MacroGeneratedComponentsEnum,
-                active_entities: &'a Vec<u8>,
+                active_entities: &'a BoolVec,
                 $(
                     $comp: std::iter::Peekable<Iter<'a, IndexedElem<$comp>>>
                 ),+
@@ -62,13 +62,14 @@ macro_rules! iterate_over_component {
                                         None => return None,
                                         Some(elem) => {
                                             if elem.index > self.current_entity {
-                                                self.current_entity = elem.index;
+                                                self.current_entity = elem.index; // update the current entity
+                                                self.current_component = macro_generated_reset();
                                                 false
                                             }
                                             else if elem.index == self.current_entity {
-                                                if match self.active_entities.get(self.current_entity / 8) {
-                                                    Some(pack) => {
-                                                        (pack & (1 << (self.current_entity % 8))) == 0
+                                                if match self.active_entities.get(self.current_entity) {
+                                                    Some(is_active) => {
+                                                        !is_active // become the if condition
                                                     }
                                                     None => return None, // no more entities to read
                                                 } {
@@ -150,7 +151,7 @@ macro_rules! iterate_over_component_mut {
             struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                 current_entity: usize,
                 current_component: MacroGeneratedComponentsEnum,
-                active_entities: &'a Vec<u8>,
+                active_entities: &'a BoolVec,
                 $(
                     $comp: std::iter::Peekable<IterMut<'a, IndexedElem<$comp>>>
                 ),+
@@ -172,14 +173,14 @@ macro_rules! iterate_over_component_mut {
                                         None => return None,
                                         Some(elem) => {
                                             if elem.index > self.current_entity {
-                                                self.current_entity = elem.index;
-
+                                                self.current_entity = elem.index; // update the current entity
+                                                self.current_component = macro_generated_reset();
                                                 false
                                             }
                                             else if elem.index == self.current_entity {
-                                                if match self.active_entities.get(self.current_entity / 8) {
-                                                    Some(pack) => {
-                                                        (pack & (1 << (self.current_entity % 8))) == 0
+                                                if match self.active_entities.get(self.current_entity) {
+                                                    Some(is_active) => {
+                                                        !is_active // become the if condition
                                                     }
                                                     None => return None, // no more entities to read
                                                 } {
