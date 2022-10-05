@@ -25,7 +25,7 @@ macro_rules! iterate_over_component {
     ($components:expr; $($comp:ident),+) => {
         {
             use foundry::ecs::component_table::ComponentTable;
-            use foundry::utils::collections::packed_array::IndexedElem;
+            use foundry::utils::collections::{packed_array::IndexedElem, bool_vec::BoolVec};
             use std::slice::Iter;
 
 
@@ -135,7 +135,7 @@ macro_rules! iterate_over_component_mut {
     ($components:expr; $($comp:ident),+) => {
         {
             use foundry::ecs::component_table::ComponentTable;
-            use foundry::utils::collections::packed_array::IndexedElem;
+            use foundry::utils::collections::{packed_array::IndexedElem, bool_vec::BoolVec};
             use std::slice::IterMut;
 
 
