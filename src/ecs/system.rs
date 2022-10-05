@@ -34,13 +34,21 @@ impl System {
             UpdateFrequency::Fixed(freq) => {
                 self.timer += delta;
                 // cannot go for a while loop because we moved the user data ! temp solution
-                if self.timer >= freq {
+                while self.timer >= freq {
                     self.system.update(components, freq, user_data);
                     self.timer -= freq;
-                    println!("[FOUNDRY] -> may need to update again fixed time step system : unimplemented feature.");
+                    // println!("[FOUNDRY] -> may need to update again fixed time step system : unimplemented feature.");
                 }
             }
         }
+    }
+
+    pub fn get_updatable(&self) -> &Box<dyn Updatable> {
+        &self.system
+    }
+
+    pub fn get_updatable_mut(&mut self) -> &mut Box<dyn Updatable> {
+        &mut self.system
     }
 }
 
@@ -48,5 +56,7 @@ impl System {
 pub trait Updatable {
     /// update that will be called by the system manager.
     fn update(&mut self, components: &mut ComponentTable, delta: f32, user_data: &mut dyn Any);
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 

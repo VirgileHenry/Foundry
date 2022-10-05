@@ -8,7 +8,7 @@ use ecs::{
     }
 };
 
-use crate::ecs::ecs::ECS;
+use crate::ecs::ecs::World;
 mod utils;
 
 
@@ -25,7 +25,7 @@ struct Velocity {
 
 #[test]
 fn component_test() {
-    let mut ecs: ECS = ECS::new();
+    let mut ecs: World = World::new();
     let entity: Entity = create_entity!(ecs);
     let entity1: Entity = create_entity!(ecs; Position{x:1.0, y:0.5});
     let entity2: Entity = create_entity!(ecs; Position{x: 0.2, y: 1.3}, Velocity{vx:0.1, vy:-0.3});
@@ -37,14 +37,14 @@ fn component_test() {
 
 #[test]
 fn entity_macro_creation_test() {
-    let mut ecs = ECS::new();
+    let mut ecs = World::new();
     // objective :
     // let entity = create_entity!(ecs, Position{...}, Velocity{...});
 }
 
 #[test]
 fn iterate_component_test() {
-    let mut ecs = ECS::new();
+    let mut ecs = World::new();
     let mut entities: Vec<Entity> = create_entities!(ecs; 100, |i:usize| -> Position {Position{x:i as f32, y:i as f32}} );
 
     for component in iterate_over_component!(&ecs.components; Position) {
@@ -64,7 +64,7 @@ fn iterate_component_test() {
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
     }
 
-    ecs = ECS::new();
+    ecs = World::new();
     entities = vec!();
     for i in 0..100 {
         if i % 2 == 0 {
@@ -81,7 +81,7 @@ fn iterate_component_test() {
         println!("Found two components on entity : pos({} {}) and vel({} {})", pos.x, pos.y, vel.vx, vel.vy);
     }
 
-    ecs = ECS::new();
+    ecs = World::new();
     entities = vec!();
     for i in 0..100 {
         if i > 50 {
@@ -148,7 +148,7 @@ fn system_test() {
 
     // Code block to measure.
     // create ecs and entities
-    let mut ecs = ECS::new();
+    let mut ecs = World::new();
     let mut entity = create_entities!(ecs; 1_000_000, |i:usize| { return Position{x:0.0, y:5.0}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
 
     let physics = PhysicSystem {
