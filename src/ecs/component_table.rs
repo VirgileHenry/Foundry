@@ -155,7 +155,7 @@ macro_rules! create_entity {
         ComponentTable::create_entity(&mut $comp_table)
     };
     ($comp_table:expr; $($comp:expr),*) => { {
-        use foundry::ecs::component_table::ComponentTable;
+        use ComponentTable;
 
         let result_entity = ComponentTable::create_entity(&mut $comp_table);
         $(
@@ -173,7 +173,7 @@ macro_rules! create_entity {
 macro_rules! create_entities {
     ($comp_table:expr; $amount:expr, $($generators:expr),*) => {
         {
-            use foundry::ecs::component_table::ComponentTable;
+            use ComponentTable;
             let result_entities = ComponentTable::create_entities(&mut $comp_table, $amount);
             let start_index = match result_entities.get(0) {Some(entity) => entity.id, None => 0};
             $(

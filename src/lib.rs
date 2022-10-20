@@ -1,2 +1,5 @@
-pub mod ecs;
-pub mod utils;
+mod ecs;
+mod utils;
+
+pub use ecs::*;
+pub use utils::*;
