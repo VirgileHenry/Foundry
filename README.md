@@ -4,6 +4,8 @@ Foundry is a entity-component-system (ecs) library written in rust, with the aim
 
 It is still in early development, and thus may contain bugs or unimplemented features.
 
+```WARNING : The examples are currently deprecated, and there are a few tweaks to do in order to make them work.```
+
 ## How to use it :
 
 ### World :
