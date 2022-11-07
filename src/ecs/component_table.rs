@@ -165,7 +165,7 @@ macro_rules! create_entity {
 
         let result_entity = ComponentTable::create_entity($comp_table);
         $(
-            $comp_table.add_comp_to_last(&result_entity, $comp);
+            $comp_table.add_comp_to_last(result_entity, $comp);
         )*
         result_entity
     } };
