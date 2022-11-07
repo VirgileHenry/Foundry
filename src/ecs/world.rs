@@ -48,38 +48,38 @@ impl World {
     /// Set an entity as active or not.
     /// Inactive entities still exists, but are ignored by iterators over components and are not updated.
     #[inline]
-    pub fn set_entity_active(&mut self, entity: &EntityRef, active: bool) {
+    pub fn set_entity_active(&mut self, entity: EntityRef, active: bool) {
         self.components.set_entity_active(entity, active);
     }
 
     /// Tells if an entity is active or not. Returns None if the entity is not found.
     #[inline]
-    pub fn is_entity_active(&self, entity: &EntityRef) -> Option<bool> {
+    pub fn is_entity_active(&self, entity: EntityRef) -> Option<bool> {
         self.components.is_entity_active(entity)
     }
     
     /// Add a given component to an entity.
     /// If the entity already had a component of this type, replace it and return it.
     #[inline]
-    pub fn add_component<C: 'static>(&mut self, entity: &EntityRef, component: C) -> Option<C> {
+    pub fn add_component<C: 'static>(&mut self, entity: EntityRef, component: C) -> Option<C> {
         return self.components.add_component(entity, component);
     }
 
     /// Get a reference to a component of the given type of an entity.
     #[inline]
-    pub fn get_component<C: 'static>(&self, entity: &EntityRef) -> Option<&C> {
+    pub fn get_component<C: 'static>(&self, entity: EntityRef) -> Option<&C> {
         return self.components.get_component::<C>(entity);
     }
 
     /// Get a mutable reference to a component of the given type of an entity.
     #[inline]
-    pub fn get_component_mut<C: 'static>(&mut self, entity: &EntityRef) -> Option<&mut C> {
+    pub fn get_component_mut<C: 'static>(&mut self, entity: EntityRef) -> Option<&mut C> {
         return self.components.get_component_mut::<C>(entity);
     }
 
     /// Removes a component of the given type of an entity, and return it if there was any.
     #[inline]
-    pub fn remove_component<C: 'static>(&mut self, entity: &EntityRef) -> Option<C> {
+    pub fn remove_component<C: 'static>(&mut self, entity: EntityRef) -> Option<C> {
         return self.components.remove_component::<C>(entity);
     }
 

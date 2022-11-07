@@ -11,6 +11,7 @@ pub struct ComponentArray<C> {
 impl<C> ComponentArray<C> {
     /// Creates a new empty component array.
     #[inline]
+    #[allow(dead_code)]
     pub fn new() -> ComponentArray<C> {
         return ComponentArray { comp_arr: UnsafeCell::new(PackedArray::<C>::new()) };
     }
@@ -71,6 +72,7 @@ impl<C> ComponentArray<C> {
 
     /// Raw mutable acces to the array.
     #[inline]
+    #[allow(dead_code)]
     pub fn get_array_mut(&mut self) -> &mut Vec<IndexedElem<C>> {
         return self.comp_arr.get_mut().get_vec_mut();
     }

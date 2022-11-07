@@ -19,7 +19,7 @@ impl BoolVec {
     pub fn all_true(size: usize) -> BoolVec {
         // todo : better way to do this
         let mut result = BoolVec::new();
-        for i in 0..size {
+        for _ in 0..size {
             result.push(true);
         }
         result

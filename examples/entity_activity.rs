@@ -30,7 +30,7 @@ fn main() {
     let mut iterator = entities.iter();
     while let Some(entity) = iterator.next() {
         iterator.next();
-        world.set_entity_active(entity, false);
+        world.set_entity_active(*entity, false);
     }
 
     // display all entities
@@ -40,7 +40,7 @@ fn main() {
     }
 
     for entity in entities.iter() {
-        world.set_entity_active(entity, !world.is_entity_active(entity).unwrap());
+        world.set_entity_active(*entity, !world.is_entity_active(*entity).unwrap());
     }
 
     // display all entities
@@ -50,7 +50,7 @@ fn main() {
     }
 
     for entity in entities.iter() {
-        world.set_entity_active(&entity, true);
+        world.set_entity_active(*entity, true);
     }
 
     // display all entities
