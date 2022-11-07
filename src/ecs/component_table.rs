@@ -1,6 +1,6 @@
 extern crate anymap;
 use crate::{ecs::{
-    entity::Entity,
+    entity::EntityRef,
     component_array::ComponentArray,
 }, utils::collections::{packed_array::IndexedElem, bool_vec::BoolVec}};
 
@@ -26,8 +26,8 @@ impl ComponentTable {
     }
 
     /// Create a new entity and return it.
-    pub fn create_entity(&mut self) -> Entity {
-        let result = Entity {
+    pub fn create_entity(&mut self) -> EntityRef {
+        let result = EntityRef {
             id: self.entity_count
         };
         self.active_entities.push(true);
@@ -36,18 +36,19 @@ impl ComponentTable {
     }
 
     /// Destroy an entity. This is not implmented as it only deactivate it and does not delete its components in memory.
-    pub fn destroy_entity(&mut self, entity: Entity) {
+    pub fn destroy_entity(&mut self, entity: EntityRef) {
         // this is bad, we move the entity and deactivate it.
+        // but it still can be accessed with manual entity ref contruction !
         // need to find a good way to remove all it's components to clean memory
         self.set_entity_active(&entity, false);
     }
 
     /// Create multiple entities at once.
     /// It's more efficient than calling ```create_entity``` multiple times.
-    pub fn create_entities(&mut self, count: usize) -> Vec<Entity> {
+    pub fn create_entities(&mut self, count: usize) -> Vec<EntityRef> {
         let mut result = Vec::with_capacity(count);
         for i in 0..count {
-            result.push(Entity { id: self.entity_count + i });
+            result.push(EntityRef { id: self.entity_count + i });
         }
         self.active_entities.append(BoolVec::all_true(count));
         self.entity_count += count;
@@ -56,13 +57,18 @@ impl ComponentTable {
 
     /// Set an entity as active or not.
     /// Inactive entities still exists, but are ignored by iterators over components and are not updated.
-    pub fn set_entity_active(&mut self, entity: &Entity, active: bool) {
+    pub fn set_entity_active(&mut self, entity: &EntityRef, active: bool) {
         self.active_entities.set(entity.id, active);
+    }
+
+    /// Tells if an entity is active or not. Returns None if the entity is not found.
+    pub fn is_entity_active(&self, entity: &EntityRef) -> Option<bool> {
+        self.active_entities.get(entity.id)
     }
 
     /// Add the given component to the given entity. 
     /// If the entity already had this type of component, it is replaced and returned. Otherwise, None is returned.
-    pub fn add_component<C: 'static>(&mut self, entity: &Entity, component: C) -> Option<C> {
+    pub fn add_component<C: 'static>(&mut self, entity: &EntityRef, component: C) -> Option<C> {
         match self.components.get_mut::<ComponentArray<C>>() {
             Some(components) => {
                 // case where the component array exist
@@ -79,7 +85,7 @@ impl ComponentTable {
     /// Adds a component to an entity assuming no entity with a highter id have this time of component.
     /// This is faster than ```add_component``` but can break the table if the condition isn't valid.
     /// This is only used when creating an entity with components.
-    pub fn add_comp_to_last<C: 'static>(&mut self, entity: &Entity, component: C) {
+    pub fn add_comp_to_last<C: 'static>(&mut self, entity: &EntityRef, component: C) {
         // this may only be used if we are ensured the entity is the last one, and it does not have this component yet
         match self.components.get_mut::<ComponentArray<C>>() {
             Some(components) => components.append_component(component, entity.id),
@@ -114,7 +120,7 @@ impl ComponentTable {
     }
 
     /// Get a reference to a component of the given type of an entity.
-    pub fn get_component<C: 'static>(&self, entity: &Entity) -> Option<&C> {
+    pub fn get_component<C: 'static>(&self, entity: &EntityRef) -> Option<&C> {
         return match self.components.get::<ComponentArray<C>>() {
             None => None,
             Some(comp_arr) => comp_arr.get_component(entity.id),
@@ -122,7 +128,7 @@ impl ComponentTable {
     }
 
     /// Get a mutable reference to a component of the given type of an entity.
-    pub fn get_component_mut<C: 'static>(&mut self, entity: &Entity) -> Option<&mut C> {
+    pub fn get_component_mut<C: 'static>(&mut self, entity: &EntityRef) -> Option<&mut C> {
         return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
             Some(comp_arr) => comp_arr.get_component_mut(entity.id),
@@ -135,7 +141,7 @@ impl ComponentTable {
     }
 
     /// Removes a component of the given type of an entity, and return it if there was any.
-    pub fn remove_component<C: 'static>(&mut self, entity: &Entity) -> Option<C> {
+    pub fn remove_component<C: 'static>(&mut self, entity: &EntityRef) -> Option<C> {
         return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
             Some(comp_arr) => comp_arr.remove_component(entity.id),
@@ -152,12 +158,12 @@ impl ComponentTable {
 macro_rules! create_entity {
     ($comp_table:expr) => { 
         use foundry::ecs::component_table::ComponentTable;
-        ComponentTable::create_entity(&mut $comp_table)
+        ComponentTable::create_entity($comp_table)
     };
     ($comp_table:expr; $($comp:expr),*) => { {
         use ComponentTable;
 
-        let result_entity = ComponentTable::create_entity(&mut $comp_table);
+        let result_entity = ComponentTable::create_entity($comp_table);
         $(
             $comp_table.add_comp_to_last(&result_entity, $comp);
         )*

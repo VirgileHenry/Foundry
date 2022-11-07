@@ -17,7 +17,7 @@ struct PhysicSystem {
 
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ComponentTable, delta: f32, user_data: &mut dyn std::any::Any) {
-        for (pos, vel) in iterate_over_component_mut!(components; Position, Velocity) {
+        for (_ent, pos, vel) in iterate_over_component_mut!(components; EntityRef; Position, Velocity) {
             vel.vx += self.gravity_x * delta;
             vel.vy += self.gravity_y * delta;
             pos.x += vel.vx * delta;

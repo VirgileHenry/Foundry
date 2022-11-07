@@ -121,6 +121,107 @@ macro_rules! iterate_over_component {
 
         }
     };
+    ($components:expr; EntityRef; $($comp:ident),+) => {
+        {
+            use foundry::*;
+            use std::slice::Iter;
+
+
+            // use an enum to get an id per component !
+            #[derive(Copy, Clone)]
+            enum MacroGeneratedComponentsEnum {
+                $(
+                    $comp,
+                )+
+                EndOfIterator
+            }
+
+            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
+                current_entity: usize,
+                current_component: MacroGeneratedComponentsEnum,
+                active_entities: &'a BoolVec,
+                $(
+                    $comp: std::iter::Peekable<Iter<'a, IndexedElem<$comp>>>
+                ),+
+            }
+
+            use foundry::fn_internal_get_next_elem;
+            // generate methods to go to next components enum
+            fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+            
+            impl<'a, $($comp: 'static),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
+                type Item = (EntityRef, $(&'a $comp),+);
+                fn next(&mut self) -> Option<Self::Item> {
+                    loop {
+                        match self.current_component {
+                            $(
+                                MacroGeneratedComponentsEnum::$comp => {
+                                    while match &self.$comp.peek() {
+                                        None => return None,
+                                        Some(elem) => {
+                                            if elem.index > self.current_entity {
+                                                self.current_entity = elem.index; // update the current entity
+                                                self.current_component = macro_generated_reset();
+                                                false
+                                            }
+                                            else if elem.index == self.current_entity {
+                                                if match self.active_entities.get(self.current_entity) {
+                                                    Some(is_active) => {
+                                                        !is_active // become the if condition
+                                                    }
+                                                    None => return None, // no more entities to read
+                                                } {
+                                                    self.current_entity += 1; // current entity is inactive, go to next one
+                                                    self.current_component = macro_generated_reset();
+                                                }
+                                                else {
+                                                    self.current_component = macro_generated_return_next(self.current_component);
+                                                }
+                                                false
+                                            }
+                                            else {
+                                                true
+                                            }
+                                        }
+                                    } {
+                                        self.$comp.next();
+                                    }
+                                }
+                            )+
+                            MacroGeneratedComponentsEnum::EndOfIterator => {
+                                let result = (
+                                    EntityRef{id: self.current_entity},
+                                    $(
+                                    match self.$comp.next() {
+                                        Some(elem) => & elem.elem,
+                                        None => return None,
+                                    }
+                                ),+);
+                                self.current_entity += 1;
+                                self.current_component = macro_generated_reset();
+                                return Some(result);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let mut result = MacroGeneratedComponentIterator {
+                current_entity: 0,
+                current_component: macro_generated_reset(),
+                active_entities: ComponentTable::get_active_entities(&$components),
+                $(
+                    $comp: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        Some(comp_arr) => comp_arr.iter().peekable(),
+                        None => [].iter().peekable(),
+                    }
+                ),+
+            };
+
+            result
+
+        }
+    };
 }
 
 
@@ -201,6 +302,108 @@ macro_rules! iterate_over_component_mut {
                             )+
                             MacroGeneratedComponentsEnum::EndOfIterator => {
                                 let result = ($(
+                                    match self.$comp.next() {
+                                        Some(elem) => & mut elem.elem,
+                                        None => return None,
+                                    }
+                                ),+);
+                                self.current_entity += 1;
+                                self.current_component = macro_generated_reset();
+                                return Some(result);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let mut result = MacroGeneratedComponentIterator {
+                current_entity: 0,
+                current_component: macro_generated_reset(),
+                active_entities: ComponentTable::get_active_entities(&$components),
+                $(
+                    $comp: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        Some(comp_arr) => comp_arr.iter_mut().peekable(),
+                        None => [].iter_mut().peekable(),
+                    }
+                ),+
+            };
+
+            result
+
+        }
+    };
+    ($components:expr; EntityRef; $($comp:ident),+) => {
+        {
+            use foundry::*;
+            use std::slice::IterMut;
+
+
+            // use an enum to get an id per component !
+            #[derive(Copy, Clone)]
+            enum MacroGeneratedComponentsEnum {
+                $(
+                    $comp,
+                )+
+                EndOfIterator
+            }
+
+            struct MacroGeneratedComponentIterator<'a, $($comp),+> {
+                current_entity: usize,
+                current_component: MacroGeneratedComponentsEnum,
+                active_entities: &'a BoolVec,
+                $(
+                    $comp: std::iter::Peekable<IterMut<'a, IndexedElem<$comp>>>
+                ),+
+            }
+
+            use foundry::fn_internal_get_next_elem;
+
+            // generate methods to go to next components enum
+            fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+            
+            impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
+                type Item = (EntityRef, $(&'a mut $comp),+);
+                fn next(&mut self) -> Option<Self::Item> {
+                    loop {
+                        match self.current_component {
+                            $(
+                                MacroGeneratedComponentsEnum::$comp => {
+                                    while match &self.$comp.peek() {
+                                        None => return None,
+                                        Some(elem) => {
+                                            if elem.index > self.current_entity {
+                                                self.current_entity = elem.index; // update the current entity
+                                                self.current_component = macro_generated_reset();
+                                                false
+                                            }
+                                            else if elem.index == self.current_entity {
+                                                if match self.active_entities.get(self.current_entity) {
+                                                    Some(is_active) => {
+                                                        !is_active // become the if condition
+                                                    }
+                                                    None => return None, // no more entities to read
+                                                } {
+                                                    self.current_entity += 1; // current entity is inactive, go to next one
+                                                    self.current_component = macro_generated_reset();
+                                                }
+                                                else {
+                                                    self.current_component = macro_generated_return_next(self.current_component);
+                                                }
+                                                false
+                                            }
+                                            else {
+                                                true
+                                            }
+                                        }
+                                    } {
+                                        self.$comp.next();
+                                    }
+                                }
+                            )+
+                            MacroGeneratedComponentsEnum::EndOfIterator => {
+                                let result = (
+                                    EntityRef{id: self.current_entity},
+                                    $(
                                     match self.$comp.next() {
                                         Some(elem) => & mut elem.elem,
                                         None => return None,

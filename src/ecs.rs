@@ -6,7 +6,7 @@ mod component_iterator;
 mod component_array;
 
 pub use world::World;
-pub use entity::Entity;
+pub use entity::EntityRef;
 pub use system::{
     System,
     Updatable,
