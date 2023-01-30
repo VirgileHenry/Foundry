@@ -33,11 +33,9 @@ impl System {
             UpdateFrequency::PerFrame => self.system.update(components, delta, user_data),
             UpdateFrequency::Fixed(freq) => {
                 self.timer += delta;
-                // cannot go for a while loop because we moved the user data ! temp solution
                 while self.timer >= freq {
                     self.system.update(components, freq, user_data);
                     self.timer -= freq;
-                    // println!("[FOUNDRY] -> may need to update again fixed time step system : unimplemented feature.");
                 }
             }
         }
