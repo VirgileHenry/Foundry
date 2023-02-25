@@ -24,7 +24,7 @@ macro_rules! fn_internal_get_next_elem {
 macro_rules! iterate_over_component {
     ($components:expr; $($comp:ident),+) => {
         {
-            use foundry::*;
+            use crate::foundry::*;
             use std::slice::Iter;
 
 
@@ -46,7 +46,7 @@ macro_rules! iterate_over_component {
                 ),+
             }
 
-            use foundry::fn_internal_get_next_elem;
+            use crate::foundry::fn_internal_get_next_elem;
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
             
@@ -123,7 +123,7 @@ macro_rules! iterate_over_component {
     };
     ($components:expr; EntityRef; $($comp:ident),+) => {
         {
-            use foundry::*;
+            use crate::foundry::*;
             use std::slice::Iter;
 
 
@@ -145,7 +145,7 @@ macro_rules! iterate_over_component {
                 ),+
             }
 
-            use foundry::fn_internal_get_next_elem;
+            use crate::foundry::fn_internal_get_next_elem;
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
             
@@ -234,7 +234,7 @@ macro_rules! iterate_over_component {
 macro_rules! iterate_over_component_mut {
     ($components:expr; $($comp:ident),+) => {
         {
-            use foundry::*;
+            use crate::foundry::*;
             use std::slice::IterMut;
 
 
@@ -256,7 +256,7 @@ macro_rules! iterate_over_component_mut {
                 ),+
             }
 
-            use foundry::fn_internal_get_next_elem;
+            use crate::foundry::fn_internal_get_next_elem;
 
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
@@ -334,7 +334,7 @@ macro_rules! iterate_over_component_mut {
     };
     ($components:expr; EntityRef; $($comp:ident),+) => {
         {
-            use foundry::*;
+            use crate::foundry::*;
             use std::slice::IterMut;
 
 
@@ -356,7 +356,7 @@ macro_rules! iterate_over_component_mut {
                 ),+
             }
 
-            use foundry::fn_internal_get_next_elem;
+            use crate::foundry::fn_internal_get_next_elem;
 
             // generate methods to go to next components enum
             fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
