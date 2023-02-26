@@ -1,5 +1,5 @@
 
-/// macro used internally in the iterator macros.
+/// macro for intern manipulation of the iterator macros.
 #[macro_export]
 macro_rules! fn_internal_get_next_elem {
     ($elem_type:ty; $first:path, $($elems:path),*) => {
@@ -25,10 +25,8 @@ macro_rules! fn_internal_get_next_elem {
 macro_rules! iterate_over_component {
     ($components:expr; $($comp:ident),+) => {
         {
-            paste::paste! {
-                use std::slice::Iter;
-
-                // use an enum to get an id per component !
+            foundry::paste::paste! {
+                // an enum to get an id per component !
                 #[derive(Copy, Clone)]
                 enum MacroGeneratedComponentsEnum {
                     $(
@@ -40,15 +38,14 @@ macro_rules! iterate_over_component {
                 struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                     current_entity: usize,
                     current_component: MacroGeneratedComponentsEnum,
-                    active_entities: &'a BoolVec,
+                    active_entities: &'a foundry::BoolVec,
                     $(
-                        [<$comp:snake>]: std::iter::Peekable<Iter<'a, IndexedElem<$comp>>>
+                        [<$comp:snake>]: std::iter::Peekable<std::slice::Iter<'a, foundry::IndexedElem<$comp>>>
                     ),+
                 }
 
-                use foundry::fn_internal_get_next_elem;
                 // generate methods to go to next components enum
-                fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+                foundry::fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
                 
                 impl<'a, $($comp: 'static),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                     type Item = ($(&'a $comp),+);
@@ -108,9 +105,9 @@ macro_rules! iterate_over_component {
                 let mut result = MacroGeneratedComponentIterator {
                     current_entity: 0,
                     current_component: macro_generated_reset(),
-                    active_entities: ComponentTable::get_active_entities(&$components),
+                    active_entities: foundry::ComponentTable::get_active_entities(&$components),
                     $(
-                        [<$comp:snake>]: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        [<$comp:snake>]: match foundry::ComponentTable::get_component_array_mut::<$comp>(&$components) {
                             Some(comp_arr) => comp_arr.iter().peekable(),
                             None => [].iter().peekable(),
                         }
@@ -125,11 +122,9 @@ macro_rules! iterate_over_component {
     };
     ($components:expr; EntityRef; $($comp:ident),+) => {
         {
-            paste::paste!{
-                use std::slice::Iter;
+            foundry::paste::paste!{
 
-
-                // use an enum to get an id per component !
+                // an enum to get an id per component !
                 #[derive(Copy, Clone)]
                 enum MacroGeneratedComponentsEnum {
                     $(
@@ -141,18 +136,17 @@ macro_rules! iterate_over_component {
                 struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                     current_entity: usize,
                     current_component: MacroGeneratedComponentsEnum,
-                    active_entities: &'a BoolVec,
+                    active_entities: &'a foundry::BoolVec,
                     $(
-                        [<$comp:snake>]: std::iter::Peekable<Iter<'a, IndexedElem<$comp>>>
+                        [<$comp:snake>]: std::iter::Peekable<std::slice::Iter<'a, foundry::IndexedElem<$comp>>>
                     ),+
                 }
 
-                use foundry::fn_internal_get_next_elem;
                 // generate methods to go to next components enum
-                fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+                foundry::fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
                 
                 impl<'a, $($comp: 'static),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
-                    type Item = (EntityRef, $(&'a $comp),+);
+                    type Item = (foundry::EntityRef, $(&'a $comp),+);
                     fn next(&mut self) -> Option<Self::Item> {
                         loop {
                             match self.current_component {
@@ -192,7 +186,7 @@ macro_rules! iterate_over_component {
                                 )+
                                 MacroGeneratedComponentsEnum::EndOfIterator => {
                                     let result = (
-                                        EntityRef{id: self.current_entity},
+                                        foundry::EntityRef{id: self.current_entity},
                                         $(
                                         match self.[<$comp:snake>].next() {
                                             Some(elem) => & elem.elem,
@@ -211,9 +205,9 @@ macro_rules! iterate_over_component {
                 let mut result = MacroGeneratedComponentIterator {
                     current_entity: 0,
                     current_component: macro_generated_reset(),
-                    active_entities: ComponentTable::get_active_entities(&$components),
+                    active_entities: foundry::ComponentTable::get_active_entities(&$components),
                     $(
-                        [<$comp:snake>]: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        [<$comp:snake>]: match foundry::ComponentTable::get_component_array_mut::<$comp>(&$components) {
                             Some(comp_arr) => comp_arr.iter().peekable(),
                             None => [].iter().peekable(),
                         }
@@ -235,10 +229,9 @@ macro_rules! iterate_over_component {
 macro_rules! iterate_over_component_mut {
     ($components:expr; $($comp:ident),+) => {
         {
-            paste::paste!{    
-            use std::slice::IterMut;
+            foundry::paste::paste!{    
 
-                // use an enum to get an id per component !
+                // an enum to get an id per component !
                 #[derive(Copy, Clone)]
                 enum MacroGeneratedComponentsEnum {
                     $(
@@ -250,16 +243,14 @@ macro_rules! iterate_over_component_mut {
                 struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                     current_entity: usize,
                     current_component: MacroGeneratedComponentsEnum,
-                    active_entities: &'a BoolVec,
+                    active_entities: &'a foundry::BoolVec,
                     $(
-                        [<$comp:snake>]: std::iter::Peekable<IterMut<'a, IndexedElem<$comp>>>
+                        [<$comp:snake>]: std::iter::Peekable<std::slice::IterMut<'a, foundry::IndexedElem<$comp>>>
                     ),+
                 }
 
-                use foundry::fn_internal_get_next_elem;
-
                 // generate methods to go to next components enum
-                fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+                foundry::fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
                 
                 impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
                     type Item = ($(&'a mut $comp),+);
@@ -319,9 +310,9 @@ macro_rules! iterate_over_component_mut {
                 let mut result = MacroGeneratedComponentIterator {
                     current_entity: 0,
                     current_component: macro_generated_reset(),
-                    active_entities: ComponentTable::get_active_entities(&$components),
+                    active_entities: foundry::ComponentTable::get_active_entities(&$components),
                     $(
-                        [<$comp:snake>]: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        [<$comp:snake>]: match foundry::ComponentTable::get_component_array_mut::<$comp>(&$components) {
                             Some(comp_arr) => comp_arr.iter_mut().peekable(),
                             None => [].iter_mut().peekable(),
                         }
@@ -335,10 +326,8 @@ macro_rules! iterate_over_component_mut {
     };
     ($components:expr; EntityRef; $($comp:ident),+) => {
         {
-            paste::paste!{
-                use std::slice::IterMut;
-
-                // use an enum to get an id per component !
+            foundry::paste::paste!{
+                // an enum to get an id per component !
                 #[derive(Copy, Clone)]
                 enum MacroGeneratedComponentsEnum {
                     $(
@@ -350,19 +339,17 @@ macro_rules! iterate_over_component_mut {
                 struct MacroGeneratedComponentIterator<'a, $($comp),+> {
                     current_entity: usize,
                     current_component: MacroGeneratedComponentsEnum,
-                    active_entities: &'a BoolVec,
+                    active_entities: &'a foundry::BoolVec,
                     $(
-                        [<$comp:snake>]: std::iter::Peekable<IterMut<'a, IndexedElem<$comp>>>
+                        [<$comp:snake>]: std::iter::Peekable<std::slice::IterMut<'a, foundry::IndexedElem<$comp>>>
                     ),+
                 }
 
-                use foundry::fn_internal_get_next_elem;
-
                 // generate methods to go to next components enum
-                fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
+                foundry::fn_internal_get_next_elem!(MacroGeneratedComponentsEnum; $(MacroGeneratedComponentsEnum::$comp, )+ MacroGeneratedComponentsEnum::EndOfIterator);
                 
                 impl<'a, $($comp),+> Iterator for MacroGeneratedComponentIterator<'a, $($comp),+> {
-                    type Item = (EntityRef, $(&'a mut $comp),+);
+                    type Item = (foundry::EntityRef, $(&'a mut $comp),+);
                     fn next(&mut self) -> Option<Self::Item> {
                         loop {
                             match self.current_component {
@@ -402,7 +389,7 @@ macro_rules! iterate_over_component_mut {
                                 )+
                                 MacroGeneratedComponentsEnum::EndOfIterator => {
                                     let result = (
-                                        EntityRef{id: self.current_entity},
+                                        foundry::EntityRef{id: self.current_entity},
                                         $(
                                         match self.[<$comp:snake>].next() {
                                             Some(elem) => & mut elem.elem,
@@ -421,9 +408,9 @@ macro_rules! iterate_over_component_mut {
                 let mut result = MacroGeneratedComponentIterator {
                     current_entity: 0,
                     current_component: macro_generated_reset(),
-                    active_entities: ComponentTable::get_active_entities(&$components),
+                    active_entities: foundry::ComponentTable::get_active_entities(&$components),
                     $(
-                        [<$comp:snake>]: match ComponentTable::get_component_array_mut::<$comp>(&$components) {
+                        [<$comp:snake>]: match foundry::ComponentTable::get_component_array_mut::<$comp>(&$components) {
                             Some(comp_arr) => comp_arr.iter_mut().peekable(),
                             None => [].iter_mut().peekable(),
                         }
