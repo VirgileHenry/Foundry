@@ -10,6 +10,8 @@ pub struct ComponentTable {
     components: anymap::Map,
     /// Vec keeping track of all the active entities.
     active_entities: BoolVec,
+    /// Layers masks on entities
+    entity_layers: ComponentArray<u32>,
     /// the count of how many entities have been created, does not count the deleted ones.
     entity_count: usize,
 }
@@ -21,6 +23,7 @@ impl ComponentTable {
         return ComponentTable {
             components: anymap::Map::new(),
             active_entities: BoolVec::new(),
+            entity_layers: ComponentArray::new(),
             entity_count: 0,
         };
     }
@@ -31,6 +34,7 @@ impl ComponentTable {
             id: self.entity_count
         };
         self.active_entities.push(true);
+        self.entity_layers.append_component(1, self.entity_count);
         self.entity_count += 1;
         result
     }
@@ -51,6 +55,7 @@ impl ComponentTable {
             result.push(EntityRef { id: self.entity_count + i });
         }
         self.active_entities.append(BoolVec::all_true(count));
+        self.entity_layers.append_components(vec![1; count], self.entity_count);
         self.entity_count += count;
         result
     }
@@ -145,6 +150,51 @@ impl ComponentTable {
         return match self.components.get_mut::<ComponentArray<C>>() {
             None => None,
             Some(comp_arr) => comp_arr.remove_component(entity.id),
+        }
+    }
+
+    pub fn test_entity_layers(&self, entity: EntityRef, mask: u32) -> Option<bool> {
+        match self.entity_layers.get_component(entity.id) {
+            None => None,
+            Some(layers) => Some((layers & mask) > 0),
+        }
+    }
+
+    pub fn test_entity_layer(&self, entity: EntityRef, layer: u8) -> Option<bool> {
+        match self.entity_layers.get_component(entity.id) {
+            None => None,
+            Some(layers) => Some((layers & (1 << layer)) > 0),
+        }
+    }
+
+    pub fn set_entity_layers(&mut self, entity: EntityRef, layers: u32) -> Option<u32> {
+        self.entity_layers.insert_component(layers, entity.id)
+    }
+
+    pub fn set_entity_layer(&mut self, entity: EntityRef, layer: u8, value: bool) {
+        match self.entity_layers.get_component_mut(entity.id) {
+            Some(layers) => if value {
+                // set the bit
+                *layers |= 1 << layer;
+            } else {
+                // unset the bit
+                *layers &= !(1 << layer);
+            }
+            None => {},
+        }
+    }
+
+    pub fn toggle_entity_layers(&mut self, entity: EntityRef) {
+        match self.entity_layers.get_component_mut(entity.id) {
+            Some(layers) => *layers = !*layers,
+            None => {},
+        }
+    }
+
+    pub fn toggle_entity_layer(&mut self, entity: EntityRef, layer: u8) {
+        match self.entity_layers.get_component_mut(entity.id) {
+            Some(layers) => *layers ^= 1 << layer,
+            None => {},
         }
     }
 

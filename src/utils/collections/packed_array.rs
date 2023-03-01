@@ -87,9 +87,6 @@ impl<T> PackedArray<T> {
     /// This is faster than inserting in the array however.
     pub fn append(&mut self, elem: T, index: usize) {
         // consider the index is the biggest elem
-        if index <= self.data[self.data.len()-1].index {
-            panic!("Unable to append to packed array : index was not the last elem. Consider using insert.");
-        }
         self.data.push(IndexedElem::new(elem, index));
     }
 
