@@ -58,6 +58,10 @@ impl<C> ComponentArray<C> {
         return self.comp_arr.get_mut().get_mut(index);
     }
 
+    pub unsafe fn unsafe_get_comp_mut(&self, index: usize) -> Option<&mut C> {
+        unsafe { return (*self.comp_arr.get()).get_mut(index); }
+    }
+
     /// Remove a component from the array, returning it.
     #[inline]
     pub fn remove_component(&mut self, index: usize) -> Option<C> {

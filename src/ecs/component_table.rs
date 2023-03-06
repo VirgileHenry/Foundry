@@ -140,6 +140,13 @@ impl ComponentTable {
         }
     }
 
+    pub unsafe fn unsafe_get_comp_mut<C: 'static>(&self, entity: EntityRef) -> Option<&mut C> {
+        return match self.components.get::<ComponentArray<C>>() {
+            None => None,
+            Some(comp_arr) => comp_arr.unsafe_get_comp_mut(entity.id),
+        }
+    } 
+
     /// Get a reference to the vec containing the active entities.
     pub fn get_active_entities(&self) -> &BoolVec {
         return &self.active_entities;

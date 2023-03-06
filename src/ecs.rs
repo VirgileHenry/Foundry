@@ -3,6 +3,7 @@ mod entity;
 mod system;
 mod component_table;
 mod component_iterator;
+mod component_getter;
 mod component_array;
 
 pub use world::World;
