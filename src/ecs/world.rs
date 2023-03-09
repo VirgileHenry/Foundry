@@ -83,6 +83,24 @@ impl World {
         return self.components.remove_component::<C>(entity);
     }
 
+    /// add the given singleton component to the table.
+    #[inline]
+    pub fn add_singleton<C: 'static>(&mut self, component: C) -> Option<C> {
+        self.components.add_singleton(component)
+    }
+
+    /// get a reference to the asked singleton component.
+    #[inline]
+    pub fn get_singleton<C: 'static>(&self) -> Option<&C> {
+        self.components.get_singleton::<C>()
+    }
+
+    /// get a mutable reference to the asked singleton component.
+    #[inline]
+    pub fn get_singleton_mut<C: 'static>(&mut self) -> Option<&mut C> {
+        self.components.get_singleton_mut::<C>()
+    }
+
     /// Register a system in the world. The index gives the order of update of all the system, starting from 0.
     #[inline]
     pub fn register_system(&mut self, system: System, index: usize) {
