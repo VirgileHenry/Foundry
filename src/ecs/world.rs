@@ -1,5 +1,4 @@
-use crate::utils::collections::packed_array::PackedArray;
-use std::any::Any;
+use std::{any::Any, collections::{BTreeMap}, num::TryFromIntError};
 use super::{
     component_table::ComponentTable,
     system::System,
@@ -13,7 +12,7 @@ pub struct World {
     // all the components on the entities
     pub components: ComponentTable, // todo : private
     // all the systems, ids being order of execution
-    systems: PackedArray<System>,
+    systems: BTreeMap<i32, System>,
 }
 
 impl World {
@@ -21,7 +20,7 @@ impl World {
     pub fn new() -> World {
         return World {  
             components: ComponentTable::new(),
-            systems: PackedArray::new(),
+            systems: BTreeMap::new(),
         };
     }
 
@@ -103,25 +102,41 @@ impl World {
 
     /// Register a system in the world. The index gives the order of update of all the system, starting from 0.
     #[inline]
-    pub fn register_system(&mut self, system: System, index: usize) {
-        self.systems.insert(system, index);
+    pub fn register_system(&mut self, system: System, index: u32) -> Result<Option<System>, TryFromIntError> {
+        Ok(self.systems.insert(index.try_into()?, system))
+    }
+
+    /// Register a system in the world. The index gives the order of update of all the system, starting from 0.
+    #[inline]
+    pub fn register_private_system(&mut self, system: System, index: i32) -> Option<System> {
+        self.systems.insert(index, system)
     }
 
     /// Get a reference to a registered system by id.
-    pub fn get_system(&self, index: usize) -> Option<&System> {
-        self.systems.get(index)
+    pub fn get_system(&self, index: u32) -> Result<Option<&System>, TryFromIntError> {
+        Ok(self.systems.get(&index.try_into()?))
     }
 
     /// Get a mutable reference to a regsistered system by id.
-    pub fn get_system_mut(&mut self, index: usize) -> Option<&mut System> {
-        self.systems.get_mut(index)
+    pub fn get_system_mut(&mut self, index: u32) -> Result<Option<&mut System>, TryFromIntError> {
+        Ok(self.systems.get_mut(&index.try_into()?))
+    }
+
+    /// Get a reference to a registered system by id.
+    pub fn get_private_system(&self, index: i32) -> Option<&System> {
+        self.systems.get(&index)
+    }
+
+    /// Get a mutable reference to a regsistered system by id.
+    pub fn get_private_system_mut(&mut self, index: i32) -> Option<&mut System> {
+        self.systems.get_mut(&index)
     }
 
     /// Call an update on every registered systems.
     pub fn update(&mut self, delta: f32, user_data: &mut dyn Any) {
         // update every system in order
-        for system in self.systems.iter_mut() {
-            system.elem.update(&mut self.components, delta, user_data);
+        for (_id, system) in self.systems.iter_mut() {
+            system.update(&mut self.components, delta, user_data);
         }
     }
 }
