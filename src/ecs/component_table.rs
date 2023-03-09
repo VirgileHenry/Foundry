@@ -8,6 +8,8 @@ use crate::{ecs::{
 pub struct ComponentTable {
     /// Anymap of the components where keys are component types, values are components arrays.
     components: anymap::Map,
+    /// singleton components are components that exists outside of entities, and there are only one instance of each type.
+    singleton_comps: anymap::Map,
     /// Vec keeping track of all the active entities.
     active_entities: BoolVec,
     /// Layers masks on entities
@@ -22,6 +24,7 @@ impl ComponentTable {
     pub fn new() -> ComponentTable {
         return ComponentTable {
             components: anymap::Map::new(),
+            singleton_comps: anymap::Map::new(),
             active_entities: BoolVec::new(),
             entity_layers: ComponentArray::new(),
             entity_count: 0,
@@ -85,6 +88,21 @@ impl ComponentTable {
                 return None;
             },
         };
+    }
+
+    /// add the given singleton component to the table.
+    pub fn add_singleton<C: 'static>(&mut self, component: C) -> Option<C> {
+        self.singleton_comps.insert(component)
+    }
+
+    /// get a reference to the asked singleton component.
+    pub fn get_singleton<C: 'static>(&self) -> Option<&C> {
+        self.singleton_comps.get::<C>()
+    }
+
+    /// get a mutable reference to the asked singleton component.
+    pub fn get_singleton_mut<C: 'static>(&mut self) -> Option<&mut C> {
+        self.singleton_comps.get_mut::<C>()
     }
 
     /// Adds a component to an entity assuming no entity with a highter id have this time of component.
