@@ -1,10 +1,12 @@
 use foundry::*;
-    // a position component
+// a position component
+#[allow(unused)]
 struct Position {
     x: f32,
     y: f32,
 }
 // a velocity component
+#[allow(unused)]
 struct Velocity {
     vx: f32,
     vy: f32,
@@ -12,17 +14,16 @@ struct Velocity {
 
 fn main() {
     
-    use std::time::Instant;
     // create world and entities
-    let mut world = World::new();
-    let mut entities = create_entities!(world.components; 10, |i:usize| { return Position{x:i as f32, y: i as f32}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
-    for (pos, vel) in iterate_over_component!(world.components; Position, Velocity) {
-        let a = pos.x + vel.vx;
+    let mut world = World::default();
+    let entities = create_entities!(world; 10, |i:usize| { return Position{x:i as f32, y: i as f32}; }, |_| { return Velocity{vx:0.0, vy:0.0}; });
+    for (pos, vel) in iterate_over_component!(world; Position, Velocity) {
+        let _a = pos.x + vel.vx;
     }
 
     // display all entities
     println!("Creating entities : ");
-    for (ent, _pos) in iterate_over_component!(world.components; EntityRef; Position) {
+    for (ent, _pos) in iterate_over_component!(world; EntityRef; Position) {
         println!("entity : {}", ent.id);
     }
 
@@ -35,17 +36,18 @@ fn main() {
 
     // display all entities
     println!("setting half the entities to inactive : ");
-    for (ent, _pos) in iterate_over_component!(world.components; EntityRef; Position) {
+    for (ent, _pos) in iterate_over_component!(world; EntityRef; Position) {
         println!("entity : {}", ent.id);
     }
 
     for entity in entities.iter() {
-        world.set_entity_active(*entity, !world.is_entity_active(*entity).unwrap());
+        let active = world.is_entity_active(*entity).unwrap();
+        world.set_entity_active(*entity, !active);
     }
 
     // display all entities
     println!("switching active entities : ");
-    for (ent, _pos) in iterate_over_component!(world.components; EntityRef; Position) {
+    for (ent, _pos) in iterate_over_component!(world; EntityRef; Position) {
         println!("entity : {}", ent.id);
     }
 
@@ -55,7 +57,7 @@ fn main() {
 
     // display all entities
     println!("All entities back to acitve : ");
-    for (ent, _pos) in iterate_over_component!(world.components; EntityRef; Position) {
+    for (ent, _pos) in iterate_over_component!(world; EntityRef; Position) {
         println!("entity : {}", ent.id);
     }
 

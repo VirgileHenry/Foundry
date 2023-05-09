@@ -1,5 +1,5 @@
 use crate::ecs::component_table::ComponentTable;
-use std::any::Any;
+use std::{any::Any, ops::{Deref, DerefMut}};
 
 /// Describes if a system should update every frame or on a fixed time step.
 pub enum UpdateFrequency {
@@ -19,6 +19,18 @@ pub struct System {
     timer: f32,
 }
 
+impl Deref for System {
+    type Target = Box<dyn Updatable>;
+    fn deref(&self) -> &Self::Target {
+        &self.system
+    }
+}
+
+impl DerefMut for System {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.system
+    }
+}
 
 impl System {
     /// Creates a new system from any struct implementing the ```Updatable``` trait.
@@ -39,14 +51,6 @@ impl System {
                 }
             }
         }
-    }
-
-    pub fn get_updatable(&self) -> &Box<dyn Updatable> {
-        &self.system
-    }
-
-    pub fn get_updatable_mut(&mut self) -> &mut Box<dyn Updatable> {
-        &mut self.system
     }
 }
 

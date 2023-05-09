@@ -15,9 +15,9 @@ struct Velocity {
 fn main() {
     
     // create world and entities
-    let mut world = World::new();
-    let mut _entity = create_entities!(world.components; 1_000_000, |_i:usize| { return Position{x:0.0, y:5.0}; }, |_i:usize| { return Velocity{vx:0.0, vy:0.0}; });
-    for (pos, vel) in iterate_over_component!(world.components; Position, Velocity) {
+    let mut world = World::default();
+    let mut _entity = create_entities!(world; 1_000_000, |_i:usize| { return Position{x:0.0, y:5.0}; }, |_i:usize| { return Velocity{vx:0.0, vy:0.0}; });
+    for (pos, vel) in iterate_over_component!(world; Position, Velocity) {
         let _a = pos.x + vel.vx + pos.y + vel.vy;
     }
 

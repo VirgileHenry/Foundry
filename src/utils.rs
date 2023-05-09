@@ -1,6 +1,2 @@
-pub mod collections;
-
-pub use collections::{
-    bool_vec::BoolVec,
-    packed_array::IndexedElem,
-};
+pub(crate) mod collections;
+pub(crate) mod macros;

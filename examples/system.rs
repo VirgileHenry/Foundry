@@ -16,18 +16,9 @@ struct PhysicSystem {
 }
 
 impl Updatable for PhysicSystem {
-    fn update(&mut self, components: &mut ComponentTable, delta: f32, user_data: &mut dyn std::any::Any) {
-        for (_ent, pos, vel) in iterate_over_component_mut!(components; EntityRef; Position, Velocity) {
-            vel.vx += self.gravity_x * delta;
-            vel.vy += self.gravity_y * delta;
-            pos.x += vel.vx * delta;
-            pos.y += vel.vy * delta;
-
-            // simple collision
-            if pos.y < 0.0 {
-                pos.y = -pos.y;
-                vel.vy = -0.8 * vel.vy;
-            }
+    fn update(&mut self, components: &mut ComponentTable, delta: f32, _user_data: &mut dyn std::any::Any) {
+        for res in component_iterator!(components, Entity, 1; Position, Velocity) {
+            
         }
     }
 
@@ -44,8 +35,8 @@ fn main() {
     
     use std::time::Instant;
     // create world and entities
-    let mut world = World::new();
-    let mut entity = create_entities!(world.components; 1_000_000, |i:usize| { return Position{x:0.0, y:5.0}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
+    let mut world = World::default();
+    let _entity = create_entities!(world; 1_000_000, |_:usize| { return Position{x:0.0, y:5.0}; }, |_:usize| { return Velocity{vx:0.0, vy:0.0}; });
 
     let physics = PhysicSystem {
         gravity_x: 0.0,
@@ -65,5 +56,6 @@ fn main() {
         
         prev = Instant::now();
     }
+
 
 }
