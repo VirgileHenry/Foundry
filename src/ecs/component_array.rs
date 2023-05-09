@@ -83,8 +83,8 @@ impl<C> ComponentArray<C> {
 
     /// Unsafe raw mutable access to the array.
     #[inline]
-    pub fn unsafe_get_array_mut(&self) -> &mut Vec<IndexedElem<C>> {
-        unsafe { return (*self.comp_arr.get()).get_vec_mut(); }
+    pub unsafe fn unsafe_get_array_mut(&self) -> &mut Vec<IndexedElem<C>> {
+        return (*self.comp_arr.get()).get_vec_mut();
     }
 
 

@@ -13,18 +13,30 @@ pub struct PackedArray<T> {
 /// Wrapper for any type with an index.
 pub struct IndexedElem<T> {
     /// The index
-    pub index: usize,
+    index: usize,
     /// the element
-    pub elem: T
+    elem: T
 }
 
 impl<T> IndexedElem<T> {
     /// Create a indexed element from an element and an index.
     pub fn new(elem: T, index: usize) -> IndexedElem<T> {
         return IndexedElem {
-            index: index,
-            elem: elem
+            index,
+            elem
         };
+    }
+
+    pub fn elem(&self) -> &T {
+        &self.elem
+    }
+
+    pub fn elem_mut(&mut self) -> &mut T {
+        &mut self.elem
+    }
+
+    pub fn index(&self) -> usize {
+        self.index
     }
 }
 

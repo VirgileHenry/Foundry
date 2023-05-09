@@ -5,3 +5,4 @@ pub(crate) mod component_table;
 pub(crate) mod component_iterator;
 pub(crate) mod component_getter;
 pub(crate) mod component_array;
+pub(crate) mod create_entity;

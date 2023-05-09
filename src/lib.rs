@@ -14,6 +14,8 @@ pub use ecs::{
     },
 };
 
+// expose our macros (all of them are needed, because they call each other)
+
 // create public types but would be better to hide them
 // however, they are needed in a macro so I don't know how to hide them
 pub type FoundryBoolVecInner = utils::collections::bool_vec::BoolVec;

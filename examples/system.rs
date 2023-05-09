@@ -17,8 +17,9 @@ struct PhysicSystem {
 
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ComponentTable, delta: f32, _user_data: &mut dyn std::any::Any) {
-        for res in component_iterator!(components, Entity, 1; Position, Velocity) {
-            
+        for (pos, vel) in component_iterator!(components; mut Position, Velocity) {
+            pos.x += vel.vx * delta;
+            pos.y += vel.vy * delta;
         }
     }
 
@@ -56,6 +57,5 @@ fn main() {
         
         prev = Instant::now();
     }
-
 
 }

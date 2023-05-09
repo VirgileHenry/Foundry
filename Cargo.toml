@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 anymap = "0.12.1" # component map
 paste = "1.0.11" # snake case for comp iterator
-static_assertions = "1.1.0" # safety measures in comp getter
