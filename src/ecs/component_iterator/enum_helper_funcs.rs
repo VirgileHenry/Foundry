@@ -1,5 +1,5 @@
-
-/// macro for intern manipulation of the iterator macros.
+/// WARNING INNER MACRO : do not call by yourself.
+/// macro that create funcs for intern manipulation of the iterator macros.
 #[macro_export]
 macro_rules! enum_helper_funcs {
     ($elem_type:ty; $first:path, $($elems:path),*) => {

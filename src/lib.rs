@@ -20,3 +20,4 @@ pub use ecs::{
 // however, they are needed in a macro so I don't know how to hide them
 pub type FoundryBoolVecInner = utils::collections::bool_vec::BoolVec;
 pub type FoundryIndexedElemInner<T> = utils::collections::packed_array::IndexedElem<T>;
+pub type FoundryEntityMasks = Vec<u32>;

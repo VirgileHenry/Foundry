@@ -1,3 +1,4 @@
+/// WARNING INNER MACRO : do not call by yourself.
 /// Inner implementation of the macro to generate the enum.
 /// Filters out the 'mut' keywords with recursive calls.
 #[macro_export]
@@ -31,6 +32,7 @@ macro_rules! generate_enum_inner {
     };
 }
 
+/// WARNING INNER MACRO : do not call by yourself.
 /// Generate the enum iterator that allows to iterate over different component types.
 /// We need a separate macro to filter out the 'mut' we get in the input.
 #[macro_export]

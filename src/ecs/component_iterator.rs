@@ -35,7 +35,13 @@ macro_rules! component_iterator {
             // finally, create an instance of the result struct
             use foundry::create_result;
             use foundry::create_result_inner;
-            create_result!($components, $($comps)+)
+            create_result!($components, ent_mask, $($comps)+)
         }
     };
 }
+
+/*
+Work in progress : this whole iteration macro could and should (maybe will ?) be optimized.
+Comparing to bevy or legion, we are actually 10x slower to iterate over entities.
+I think this is due to the structure, but also to the mask and entity activity that add lots of checks.
+ */

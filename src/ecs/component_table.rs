@@ -13,7 +13,7 @@ pub struct ComponentTable {
     /// Vec keeping track of all the active entities.
     active_entities: BoolVec,
     /// Layers masks on entities
-    entity_layers: ComponentArray<u32>,
+    entity_layers: Vec<u32>,
     /// the count of how many entities have been created, does not count the deleted ones.
     entity_count: usize,
 }
@@ -27,7 +27,7 @@ impl ComponentTable {
             components: anymap::Map::new(),
             singletons: anymap::Map::new(),
             active_entities: BoolVec::new(),
-            entity_layers: ComponentArray::new(),
+            entity_layers: Vec::new(),
             entity_count: 0,
         };
     }
@@ -36,7 +36,7 @@ impl ComponentTable {
     pub fn create_entity(&mut self) -> Entity {
         let result = self.entity_count;
         self.active_entities.push(true);
-        self.entity_layers.append_component(1, self.entity_count);
+        self.entity_layers.push(u32::MAX);
         self.entity_count += 1;
         result
     }
@@ -57,7 +57,7 @@ impl ComponentTable {
             result.push(self.entity_count + i);
         }
         self.active_entities.append(BoolVec::all_true(count));
-        self.entity_layers.append_components(vec![1; count], self.entity_count);
+        self.entity_layers.append(&mut vec![u32::MAX; count]);
         self.entity_count += count;
         result
     }
@@ -172,24 +172,27 @@ impl ComponentTable {
     /// check if the entity have at least one layer in common with the given mask
     #[inline]
     pub fn test_entity_layers(&self, entity: Entity, mask: u32) -> Option<bool> {
-        Some((self.entity_layers.get_component(entity)? & mask) > 0)
+        Some((self.entity_layers.get(entity)? & mask) > 0)
     }
 
     /// check if a specific layer of the entity is active.
     #[inline]
     pub fn test_entity_layer(&self, entity: Entity, layer: u8) -> Option<bool> {
-        Some((self.entity_layers.get_component(entity)? & (1 << layer)) > 0)
+        Some((self.entity_layers.get(entity)? & (1 << layer)) > 0)
     }
 
     /// set an entity's layers.
     #[inline]
-    pub fn set_entity_layers(&mut self, entity: Entity, layers: u32) -> Option<u32> {
-        self.entity_layers.insert_component(layers, entity)
+    pub fn set_entity_layers(&mut self, entity: Entity, layers: u32) {
+        match self.entity_layers.get_mut(entity) {
+            Some(v) => *v = layers,
+            None => {},
+        };
     }
 
     /// set an entity single layer.
     pub fn set_entity_layer(&mut self, entity: Entity, layer: u8, value: bool) {
-        match self.entity_layers.get_component_mut(entity) {
+        match self.entity_layers.get_mut(entity) {
             Some(layers) => if value {
                 // set the bit
                 *layers |= 1 << layer;
@@ -203,7 +206,7 @@ impl ComponentTable {
 
     /// flips all the layers of a given entity.
     pub fn toggle_entity_layers(&mut self, entity: Entity) {
-        match self.entity_layers.get_component_mut(entity) {
+        match self.entity_layers.get_mut(entity) {
             Some(layers) => *layers = !*layers,
             None => {},
         }
@@ -211,10 +214,15 @@ impl ComponentTable {
 
     /// flip the given layer of a given entity.
     pub fn toggle_entity_layer(&mut self, entity: Entity, layer: u8) {
-        match self.entity_layers.get_component_mut(entity) {
+        match self.entity_layers.get_mut(entity) {
             Some(layers) => *layers ^= 1 << layer,
             None => {},
         }
+    }
+
+    /// Borrow the entity layers.
+    pub fn get_layers(&self) -> &Vec<u32> {
+        &self.entity_layers
     }
 
 }

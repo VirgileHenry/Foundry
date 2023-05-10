@@ -1,3 +1,4 @@
+/// WARNING INNER MACRO : do not call by yourself.
 /// Implements the iterator trait for our result component iterator.
 /// With the mut keywords, we have to do this in the same way : 
 /// put the whole empty implementation as a param, and it will complete itslef with recursive calls.
@@ -8,6 +9,9 @@ macro_rules! impl_iterator_inner {
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
+                while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
+                    self.current_entity += 1;
+                }
                 loop {
                     match self.current_component {
                         ($($match_out:tt)*)
@@ -27,29 +31,28 @@ macro_rules! impl_iterator_inner {
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                     type Item = ($($item_out)* &'a $comp,);
                     fn next(&mut $self) -> Option<Self::Item> {
+                        // advance current entity while it is inactive or does not match the mask
+                        while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                            $self.current_entity += 1;
+                        }
+                        // at this point, we are sure to have an active entity with a matching mask
                         loop {
                             match $self.current_component {
                                 (
                                     $($match_out)*
                                     MacroGeneratedComponentsEnum::$comp => {
-                                        while {
-                                            let elem = &$self.[<$comp:snake>].peek()?;
-                                            if elem.index() > $self.current_entity {
-                                                $self.current_entity = elem.index(); // update the current entity
-                                                $self.current_component = macro_generated_reset();
-                                                false
-                                            } else if elem.index() == $self.current_entity {
-                                                match $self.active_entities.get($self.current_entity)? {
-                                                    true => {
-                                                        $self.current_entity += 1; // current entity is inactive, go to next one
-                                                        $self.current_component = macro_generated_reset();
-                                                    }
-                                                    false => $self.current_component = macro_generated_return_next($self.current_component),
-                                                }
-                                                false // stop iteration
-                                            } else { true /* keep iterating */ }
-                                        } {
+                                        // advance until we go at or pass entity
+                                        while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                             $self.[<$comp:snake>].next();
+                                        }
+                                        // check what we do with current entity :
+                                        if $self.[<$comp:snake>].peek()?.index() > $self.current_entity {
+                                            // update the current entity to next entity to have this comp
+                                            $self.current_entity = $self.[<$comp:snake>].peek()?.index();
+                                            $self.current_component = macro_generated_reset();
+                                        } else {
+                                            // we are valid on this component, 
+                                            $self.current_component = macro_generated_return_next($self.current_component)
                                         }
                                     }
                                 )
@@ -74,6 +77,9 @@ macro_rules! impl_iterator_inner {
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
+                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                    self.current_entity += 1;
+                }
                 loop {
                     match self.current_component {
                         ($($match_out:tt)*)
@@ -92,28 +98,27 @@ macro_rules! impl_iterator_inner {
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 type Item = ($($item_out)* &'a $comp);
                 fn next(&mut $self) -> Option<Self::Item> {
+                    // advance current entity while it is inactive or does not match the mask
+                    while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                        $self.current_entity += 1;
+                    }
+                    // at this point, we are sure to have an active entity with a matching mask
                     loop {
                         match $self.current_component {
                             $($match_out)*
                             MacroGeneratedComponentsEnum::$comp => {
-                                while {
-                                    let elem = &$self.[<$comp:snake>].peek()?;
-                                    if elem.index() > $self.current_entity {
-                                        $self.current_entity = elem.index(); // update the current entity
-                                        $self.current_component = macro_generated_reset();
-                                        false
-                                    } else if elem.index() == $self.current_entity {
-                                        match $self.active_entities.get($self.current_entity)? {
-                                            true => {
-                                                $self.current_entity += 1; // current entity is inactive, go to next one
-                                                $self.current_component = macro_generated_reset();
-                                            }
-                                            false => $self.current_component = macro_generated_return_next($self.current_component),
-                                        }
-                                        false // stop iteration
-                                    } else { true /* keep iterating */ }
-                                } {
+                                // advance until we go at or pass entity
+                                while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                     $self.[<$comp:snake>].next();
+                                }
+                                // check what we do with current entity :
+                                if $self.[<$comp:snake>].peek()?.index() > $self.current_entity {
+                                    // update the current entity to next entity to have this comp
+                                    $self.current_entity = $self.[<$comp:snake>].peek()?.index();
+                                    $self.current_component = macro_generated_reset();
+                                } else {
+                                    // we are valid on this component, 
+                                    $self.current_component = macro_generated_return_next($self.current_component)
                                 }
                             }
                             MacroGeneratedComponentsEnum::EndOfIterator => {
@@ -136,6 +141,9 @@ macro_rules! impl_iterator_inner {
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
+                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                    self.current_entity += 1;
+                }
                 loop {
                     match self.current_component {
                         ($($match_out:tt)*)
@@ -155,29 +163,28 @@ macro_rules! impl_iterator_inner {
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                     type Item = ($($item_out)* &'a mut $comp,);
                     fn next(&mut $self) -> Option<Self::Item> {
+                        // advance current entity while it is inactive or does not match the mask
+                        while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                            $self.current_entity += 1;
+                        }
+                        // at this point, we are sure to have an active entity with a matching mask
                         loop {
                             match $self.current_component {
                                 (
                                     $($match_out)*
                                     MacroGeneratedComponentsEnum::$comp => {
-                                        while {
-                                            let elem = &$self.[<$comp:snake>].peek()?;
-                                            if elem.index() > $self.current_entity {
-                                                $self.current_entity = elem.index(); // update the current entity
-                                                $self.current_component = macro_generated_reset();
-                                                false
-                                            } else if elem.index() == $self.current_entity {
-                                                match $self.active_entities.get($self.current_entity)? {
-                                                    true => {
-                                                        $self.current_entity += 1; // current entity is inactive, go to next one
-                                                        $self.current_component = macro_generated_reset();
-                                                    }
-                                                    false => $self.current_component = macro_generated_return_next($self.current_component),
-                                                }
-                                                false // stop iteration
-                                            } else { true /* keep iterating */ }
-                                        } {
+                                        // advance until we go at or pass entity
+                                        while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                             $self.[<$comp:snake>].next();
+                                        }
+                                        // check what we do with current entity :
+                                        if $self.[<$comp:snake>].peek()?.index() > $self.current_entity {
+                                            // update the current entity to next entity to have this comp
+                                            $self.current_entity = $self.[<$comp:snake>].peek()?.index();
+                                            $self.current_component = macro_generated_reset();
+                                        } else {
+                                            // we are valid on this component, 
+                                            $self.current_component = macro_generated_return_next($self.current_component)
                                         }
                                     }
                                 )
@@ -202,6 +209,9 @@ macro_rules! impl_iterator_inner {
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
+                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                    self.current_entity += 1;
+                }
                 loop {
                     match self.current_component {
                         ($($match_out:tt)*)
@@ -220,28 +230,27 @@ macro_rules! impl_iterator_inner {
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 type Item = ($($item_out)* &'a mut $comp);
                 fn next(&mut $self) -> Option<Self::Item> {
+                    // advance current entity while it is inactive or does not match the mask
+                    while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                        $self.current_entity += 1;
+                    }
+                    // at this point, we are sure to have an active entity with a matching mask
                     loop {
                         match $self.current_component {
                             $($match_out)*
                             MacroGeneratedComponentsEnum::$comp => {
-                                while {
-                                    let elem = &$self.[<$comp:snake>].peek()?;
-                                    if elem.index() > $self.current_entity {
-                                        $self.current_entity = elem.index(); // update the current entity
-                                        $self.current_component = macro_generated_reset();
-                                        false
-                                    } else if elem.index() == $self.current_entity {
-                                        match $self.active_entities.get($self.current_entity)? {
-                                            true => {
-                                                $self.current_entity += 1; // current entity is inactive, go to next one
-                                                $self.current_component = macro_generated_reset();
-                                            }
-                                            false => $self.current_component = macro_generated_return_next($self.current_component),
-                                        }
-                                        false // stop iteration
-                                    } else { true /* keep iterating */ }
-                                } {
+                                // advance until we go at or pass entity
+                                while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                     $self.[<$comp:snake>].next();
+                                }
+                                // check what we do with current entity :
+                                if $self.[<$comp:snake>].peek()?.index() > $self.current_entity {
+                                    // update the current entity to next entity to have this comp
+                                    $self.current_entity = $self.[<$comp:snake>].peek()?.index();
+                                    $self.current_component = macro_generated_reset();
+                                } else {
+                                    // we are valid on this component, 
+                                    $self.current_component = macro_generated_return_next($self.current_component)
                                 }
                             }
                             MacroGeneratedComponentsEnum::EndOfIterator => {
@@ -261,6 +270,8 @@ macro_rules! impl_iterator_inner {
     };
 }
 
+/// WARNING INNER MACRO : do not call by yourself.
+/// This calls the inner impl iterator macro, passing it the correct start arguments.
 #[macro_export]
 macro_rules! impl_iterator {
     ($($comps:tt)*) => {
@@ -268,6 +279,9 @@ macro_rules! impl_iterator {
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 type Item = ();
                 fn next(&mut self) -> Option<Self::Item> {
+                    while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                        self.current_entity += 1;
+                    }
                     loop {
                         match self.current_component {
                             ()

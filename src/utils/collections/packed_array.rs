@@ -27,14 +27,17 @@ impl<T> IndexedElem<T> {
         };
     }
 
+    #[inline]
     pub fn elem(&self) -> &T {
         &self.elem
     }
 
+    #[inline]
     pub fn elem_mut(&mut self) -> &mut T {
         &mut self.elem
     }
 
+    #[inline]
     pub fn index(&self) -> usize {
         self.index
     }
@@ -189,16 +192,6 @@ impl<T> PackedArray<T> {
     /// Raw mutable access to the vec
     pub fn get_vec_mut(&mut self) -> &mut Vec<IndexedElem<T>> {
         return &mut self.data;
-    }
-
-    /// Iterator over the vector.
-    pub fn iter(&self) -> std::slice::Iter<IndexedElem<T>> {
-        return self.data.iter();
-    }
-
-    /// Mutable iterator over the vector.
-    pub fn iter_mut(&mut self) -> std::slice::IterMut<IndexedElem<T>> {
-        return self.data.iter_mut();
     }
 }
 

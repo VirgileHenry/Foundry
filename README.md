@@ -1,19 +1,15 @@
 # Foundry
 
-Foundry is a entity-component-system (ecs) library written in rust, with the aim of learning rust and using it for the Gear rust game engine.
-
-It is still in early development, and thus may contain bugs or unimplemented features.
-
-```WARNING : The examples are currently deprecated, and there are a few tweaks to do in order to make them work.```
+Foundry is a entity-component-system (ecs) library written in rust. It has been made to be the foundation of a game engine, and have several unique functionnalities. It is however still under development, and will be optimized and upgraded.
 
 ## How to use it :
 
 ### World :
 
-First, you create a ```World``` which represents the whole ecs, and gives the programmer an interface to it:
+First, you create a ```World``` which represents the whole ecs, and gives an interface to build entities, components and systems. A world can be dereferenced to access the inner ```ComponentTable```, which is a key component of this ECS.
 
 ```rust
-let mut world = World::new();
+let mut world = World::default();
 ```
 
 ### Entity :
@@ -21,14 +17,16 @@ let mut world = World::new();
 Using the world you can now create entities :
 
 ```rust
-let mut world = World::new();
+let mut world = World::default();
 let entity: Entity = world.create_entity();
-let entities: Vec<Entity> = world.create_entities();
+let entities: Vec<Entity> = world.create_entities(100);
 ```
+
+Entities are an ID, nothing more. The ID is then used to reference the components in the component arrays.
 
 ### Component :
 
-Components can be any struct you want.
+Components can be any struct you want. This allow versatility and avoid boilerplate code or overhead to create components. Components can also be composed types, like ```(u32, String)```, but these types are not yet supported by the component iterator macro.
 ```rust
 // a position component
 struct Position {
@@ -45,14 +43,14 @@ struct Velocity {
 Components can be added, read and removed from entities :
 
 ```rust
-let mut world = World::new();
+let mut world = World::default();
 let entity: Entity = world.create_entity();
-world.add_component(&entity, Position{x:0.0, y:12.4}); // add a component
+world.add_component(entity, Position{x:0.0, y:12.4}); // add a component
 let pos = world.get_component::<Position>(&entity);
 println!("position component : {} {}", pos.x, pos.y);
 ```
 
-There are also macros that allow creation of one or multiple entities with components already attached to it, that are more efficients :
+There are also macros that allow creation of one or multiple entities with components already attached to it. They are more efficient and should be used in most of the cases.
 
 ```rust
 let mut world = World::new();
@@ -72,92 +70,20 @@ struct PhysicSystem {
 }
 ```
 
-When implementing the ```updatable``` trait, you can use two macros to iterate over any n-uplets of components :
+When implementing the ```updatable``` trait, you can use the ```component_iterator!``` macro to iterate over any tuple of components. This macro is made for simplcity and readability. The general invocation is ```components, mask?; comps+``` 
 
 ```rust
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
+        for pos in component_iterator!(world.components; Position) {
+            /* iterate over all positions */
+        }
 
-    }
-}
-```
-
-To iterate over any components, use ```iterate_over_components``` and ```iterate_over_components_mut``` macros like so :
-
-```rust
-for pos in iterate_over_component!(world.components; Position) {
-    /* iterate over all positions */
-}
-
-for (pos, vel) in iterate_over_component_mut!(world.components; Position, Velocity) {
-    /* iterate with mutability over all positions and velocity */
-}
-```
-
-With all this, we can for example implement basic gravity :
-
-```rust
-// a position component
-struct Position {
-    x: f32,
-    y: f32,
-}
-// a velocity component
-struct Velocity {
-    vx: f32,
-    vy: f32,
-}
-
-struct PhysicSystem {
-    gravity_x: f32,
-    gravity_y: f32,
-}
-
-impl Updatable for PhysicSystem {
-    fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
-        for (pos, vel) in iterate_over_component_mut!(components; Position, Velocity) {
-            vel.vx += self.gravity_x * delta;
-            vel.vy += self.gravity_y * delta;
-            pos.x += vel.vx * delta;
-            pos.y += vel.vy * delta;
-
-            // simple collision
-            if pos.y < 0.0 {
-                pos.y = -pos.y;
-                vel.vy = -0.8 * vel.vy;
-            }
+        for (pos, vel) in component_iterator!(world.components; mut Position, Velocity) {
+            /* iterate with mutability over all positions and velocity */
         }
     }
 }
-
-fn main() {
-    
-    use std::time::Instant;
-    // create ecs and entities
-    let mut ecs = World::new();
-    let mut entity = create_entities!(ecs; 1_000_000, |i:usize| { return Position{x:0.0, y:5.0}; }, |i:usize| { return Velocity{vx:0.0, vy:0.0}; });
-
-    let physics = PhysicSystem {
-        gravity_x: 0.0,
-        gravity_y: -9.81,
-    };
-
-    let physic_system = System::new(Box::new(physics), UpdateFrequency::Fixed(0.002));
-
-    ecs.register_system(physic_system, 1);
-
-    let mut prev = Instant::now();
-
-    loop {
-        let mut delta = prev.elapsed().as_secs_f64();
-
-        ecs.update(delta as f32);
-        
-        prev = Instant::now();
-    }
-
-}
-
 ```
 
-Please feel free to play around, and report any bugs or issues, or even optimisations ! 
+Please feel free to play around, and report any bugs, issues or optimisations ! 

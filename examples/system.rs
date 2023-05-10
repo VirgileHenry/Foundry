@@ -10,10 +10,7 @@ struct Velocity {
     vy: f32,
 }
 
-struct PhysicSystem {
-    gravity_x: f32,
-    gravity_y: f32,
-}
+struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ComponentTable, delta: f32, _user_data: &mut dyn std::any::Any) {
@@ -39,10 +36,7 @@ fn main() {
     let mut world = World::default();
     let _entity = create_entities!(world; 1_000_000, |_:usize| { return Position{x:0.0, y:5.0}; }, |_:usize| { return Velocity{vx:0.0, vy:0.0}; });
 
-    let physics = PhysicSystem {
-        gravity_x: 0.0,
-        gravity_y: -9.81,
-    };
+    let physics = PhysicSystem {};
 
     let physic_system = System::new(Box::new(physics), UpdateFrequency::Fixed(0.002));
 
@@ -50,7 +44,7 @@ fn main() {
 
     let mut prev = Instant::now();
 
-    loop {
+    for _ in 0..1000000 {
         let delta = prev.elapsed().as_secs_f64();
 
         world.update(delta as f32, &mut 0);
@@ -58,4 +52,5 @@ fn main() {
         prev = Instant::now();
     }
 
+    [0, 1, 2].iter().peekable().peek();
 }
