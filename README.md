@@ -1,6 +1,6 @@
 # Foundry
 
-Foundry is a entity-component-system (ecs) library written in rust. It has been made to be the foundation of a game engine, and have several unique functionnalities. It is however still under development, and will be optimized and upgraded.
+Foundry is a sparse entity-component-system (ecs) library written in rust. It has been made to be the foundation of a game engine, and have several unique functionnalities. It is however still under development, and will be optimized and upgraded.
 
 ## How to use it :
 
