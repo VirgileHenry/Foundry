@@ -13,22 +13,13 @@ use super::{
 /// Entities represents objects, components are pieces of data on those objects.
 /// we can also add singleton : components that are not attached to entities.
 /// Systems can iterate over components, and change such data.
+#[derive(Default)] // todo : clone, debug
 pub struct World {
     // can be considerer to be a world
     // all the components on the entities
     components: ComponentTable,
     // all the systems, ids being order of execution
     systems: BTreeMap<i32, System>,
-}
-
-impl Default for World {
-    /// Creates a new, empty world.
-    fn default() -> Self {
-        World {  
-            components: ComponentTable::new(),
-            systems: BTreeMap::new(),
-        }
-    }
 }
 
 impl Deref for World {

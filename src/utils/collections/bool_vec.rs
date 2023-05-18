@@ -1,6 +1,7 @@
 /// More efficient than a Vec<bool>, as it takes 8x less space
 /// let's store the bool in a u8 ! each vec component contains 8 of them.
 /// At it's core, this is a wrapper around Vec<u8> where each bits represent a bool.
+#[derive(Default, Debug, Clone)]
 pub struct BoolVec {
     pub data: Vec<u8>,
     remaining_space: usize,

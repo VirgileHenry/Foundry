@@ -1,4 +1,3 @@
-extern crate anymap;
 use crate::{ecs::{
     entity::Entity,
     component_array::ComponentArray,
@@ -7,9 +6,9 @@ use crate::{ecs::{
 /// Stores all the components of the entites packed up together to ease iteration.
 pub struct ComponentTable {
     /// Anymap of the components where keys are component types, values are components arrays.
-    components: anymap::Map,
+    components: anymap::AnyMap,
     /// singleton components are components that exists outside of entities, and there are only one instance of each type.
-    singletons: anymap::Map,
+    singletons: anymap::AnyMap,
     /// Vec keeping track of all the active entities.
     active_entities: BoolVec,
     /// Layers masks on entities
@@ -18,6 +17,11 @@ pub struct ComponentTable {
     entity_count: usize,
 }
 
+impl Default for ComponentTable {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// Struct keeping all the components with methods to add, remove, create entities, etc...
 impl ComponentTable {
@@ -41,7 +45,7 @@ impl ComponentTable {
         result
     }
 
-    /// Destroy an entity. This is not implmented as it only deactivate it and does not delete its components in memory.
+    /// Destroy an entity. This is not implemented as it only deactivate it and does not delete its components in memory.
     pub fn destroy_entity(&mut self, entity: Entity) {
         // this is bad, we move the entity and deactivate it.
         // but it still can be accessed with manual entity ref contruction !

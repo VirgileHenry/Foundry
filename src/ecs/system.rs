@@ -1,9 +1,12 @@
 use crate::ecs::component_table::ComponentTable;
-use std::{any::Any, ops::{Deref, DerefMut}};
+use std::{any::Any, fmt::Debug};
+use dyn_clone::{DynClone, clone_box};
 
 /// Describes if a system should update every frame or on a fixed time step.
+#[derive(Default, Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum UpdateFrequency {
     /// Update every frame.
+    #[default]
     PerFrame,
     /// updates on a fixed time step.
     Fixed(f32),
@@ -19,16 +22,13 @@ pub struct System {
     timer: f32,
 }
 
-impl Deref for System {
-    type Target = Box<dyn Updatable>;
-    fn deref(&self) -> &Self::Target {
-        &self.system
-    }
-}
-
-impl DerefMut for System {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.system
+impl Clone for System {
+    fn clone(&self) -> Self {
+        System { 
+            system: clone_box(self.system.as_ref()),
+            frequency: self.frequency,
+            timer: self.timer
+        }
     }
 }
 
@@ -55,10 +55,8 @@ impl System {
 }
 
 /// Trait that allow any struct to be used as a system.
-pub trait Updatable {
+pub trait Updatable: DynClone {
     /// update that will be called by the system manager.
     fn update(&mut self, components: &mut ComponentTable, delta: f32, user_data: &mut dyn Any);
-    fn as_any(&self) -> &dyn Any;
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
