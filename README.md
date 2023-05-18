@@ -75,12 +75,16 @@ When implementing the ```updatable``` trait, you can use the ```component_iterat
 ```rust
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ecs::component_table::ComponentTable, delta: f32) {
-        for pos in component_iterator!(world.components; Position) {
+        for pos in component_iterator!(components; Position) {
             /* iterate over all positions */
         }
 
-        for (pos, vel) in component_iterator!(world.components; mut Position, Velocity) {
+        for (pos, vel) in component_iterator!(components; mut Position, Velocity) {
             /* iterate with mutability over all positions and velocity */
+        }
+
+        for pos in component_iterator!(components 1 << 12; Position) {
+            // iterate over all positions on entities that have the 12th layer activated
         }
     }
 }
