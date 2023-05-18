@@ -10,6 +10,7 @@ struct Velocity {
     vy: f32,
 }
 
+#[derive(Clone)]
 struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {
@@ -18,14 +19,6 @@ impl Updatable for PhysicSystem {
             pos.x += vel.vx * delta;
             pos.y += vel.vy * delta;
         }
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
     }
 }
 
@@ -44,13 +37,11 @@ fn main() {
 
     let mut prev = Instant::now();
 
-    for _ in 0..1000000 {
+    for _ in 0..1000 {
         let delta = prev.elapsed().as_secs_f64();
 
         world.update(delta as f32, &mut 0);
         
         prev = Instant::now();
     }
-
-    [0, 1, 2].iter().peekable().peek();
 }
