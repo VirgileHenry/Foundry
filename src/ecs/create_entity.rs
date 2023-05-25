@@ -13,7 +13,7 @@ macro_rules! create_entity {
         // static assertion that components are different
         // otherwise it would create two comps with same entity id
         // no need to assert exclusive types, they will just override each others.
-        let result_entity = foundry::ecs::ComponentTable::create_entity($comp_table);
+        let result_entity = foundry::ComponentTable::create_entity($comp_table);
         $(
             $comp_table.add_comp_to_last(result_entity, $comp);
         )*
