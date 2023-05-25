@@ -1,6 +1,5 @@
 use crate::ecs::component_table::ComponentTable;
 use std::fmt::Debug;
-use dyn_clone::{DynClone, clone_box};
 
 /// Describes if a system should update every frame or on a fixed time step.
 #[derive(Default, Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -20,16 +19,6 @@ pub struct System {
     frequency: UpdateFrequency,
     /// intern timer for fixed time step of update frequency
     timer: f32,
-}
-
-impl Clone for System {
-    fn clone(&self) -> Self {
-        System { 
-            system: clone_box(self.system.as_ref()),
-            frequency: self.frequency,
-            timer: self.timer
-        }
-    }
 }
 
 impl System {
@@ -55,7 +44,7 @@ impl System {
 }
 
 /// Trait that allow any struct to be used as a system.
-pub trait Updatable: DynClone {
+pub trait Updatable {
     /// update that will be called by the system manager.
     fn update(&mut self, components: &mut ComponentTable, delta: f32);
 }
