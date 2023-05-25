@@ -41,6 +41,16 @@ impl System {
             }
         }
     }
+
+    /// calls on start on the inner system.
+    pub fn on_start(&mut self, components: &mut ComponentTable) {
+        self.system.on_start(components);
+    }
+
+    /// calls clean up on the inner system.
+    pub fn clean_up(&mut self, components: &mut ComponentTable) {
+        self.system.clean_up(components);
+    }
 }
 
 /// Trait that allow any struct to be used as a system.
