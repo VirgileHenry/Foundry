@@ -54,10 +54,12 @@ impl World {
         self.systems.get_mut(&index)
     }
 
+    /// access to the inner systems as an iterator.
     pub fn system_iter(&self) -> impl Iterator<Item = &System> {
         self.systems.values()
     }
 
+    /// mutable access to the inner systems as an iterator.
     pub fn system_iter_mut(&mut self) -> impl Iterator<Item = &mut System> {
         self.systems.values_mut()
     }
@@ -67,6 +69,20 @@ impl World {
         // update every system in order
         for (_id, system) in self.systems.iter_mut() {
             system.update(&mut self.components, delta);
+        }
+    }
+
+    /// calls the on start on every system.
+    pub fn on_start(&mut self) {
+        for (_id, system) in self.systems.iter_mut() {
+            system.on_start(&mut self.components);
+        }
+    }
+
+    /// calls the clean up on every system.
+    pub fn clean_up(&mut self) {
+        for (_id, system) in self.systems.iter_mut() {
+            system.clean_up(&mut self.components);
         }
     }
 }
