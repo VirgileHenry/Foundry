@@ -54,6 +54,14 @@ impl World {
         self.systems.get_mut(&index)
     }
 
+    pub fn system_iter(&self) -> impl Iterator<Item = &System> {
+        self.systems.values()
+    }
+
+    pub fn system_iter_mut(&mut self) -> impl Iterator<Item = &mut System> {
+        self.systems.values_mut()
+    }
+
     /// Call an update on every registered systems.
     pub fn update(&mut self, delta: f32) {
         // update every system in order
