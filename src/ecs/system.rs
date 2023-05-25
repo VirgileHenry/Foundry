@@ -45,7 +45,11 @@ impl System {
 
 /// Trait that allow any struct to be used as a system.
 pub trait Updatable {
+    // Optionnal, called for any initial set up.
+    fn on_start(&mut self, _components: &mut ComponentTable) {}
     /// update that will be called by the system manager.
     fn update(&mut self, components: &mut ComponentTable, delta: f32);
+    /// Optionnal function, called when the system will be deleted.
+    fn clean_up(&mut self, _components: &mut ComponentTable) {}
 }
 

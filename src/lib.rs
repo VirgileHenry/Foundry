@@ -3,6 +3,9 @@ pub extern crate paste;
 pub(crate) mod ecs;
 pub(crate) mod utils;
 
+#[cfg(test)]
+pub(crate) mod test;
+
 // what we export from our lib
 pub use ecs::{
     component_table::ComponentTable,
