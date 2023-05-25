@@ -16,7 +16,7 @@ checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
 name = "foundry"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anymap",
  "dyn-clone",

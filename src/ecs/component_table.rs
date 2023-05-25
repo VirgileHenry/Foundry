@@ -229,4 +229,9 @@ impl ComponentTable {
         &self.entity_layers
     }
 
+    /// Remove an entire row of components from the comp table, returning an iterator over it.
+    pub fn drain_components<C: 'static>(&mut self) -> Option<impl Iterator<Item = (usize, C)>> {
+        Some(self.components.remove::<ComponentArray<C>>()?.drain())
+    }
+
 }

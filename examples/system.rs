@@ -14,7 +14,7 @@ struct Velocity {
 struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {
-    fn update(&mut self, components: &mut ComponentTable, delta: f32, _user_data: &mut dyn std::any::Any) {
+    fn update(&mut self, components: &mut ComponentTable, delta: f32) {
         for (pos, vel) in component_iterator!(components; mut Position, Velocity) {
             pos.x += vel.vx * delta;
             pos.y += vel.vy * delta;
@@ -40,7 +40,7 @@ fn main() {
     for _ in 0..1000 {
         let delta = prev.elapsed().as_secs_f64();
 
-        world.update(delta as f32, &mut 0);
+        world.update(delta as f32);
         
         prev = Instant::now();
     }

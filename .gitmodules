@@ -1,0 +1,3 @@
+[submodule "deps/anymap"]
+	path = deps/anymap
+	url = https://github.com/chris-morgan/anymap

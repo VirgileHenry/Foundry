@@ -1,5 +1,5 @@
 use std::{
-    any::Any, collections::BTreeMap, ops::{
+    collections::BTreeMap, ops::{
         Deref,
         DerefMut
     }
@@ -19,7 +19,7 @@ pub struct World {
     // all the components on the entities
     components: ComponentTable,
     // all the systems, ids being order of execution
-    systems: BTreeMap<i32, System>,
+    systems: BTreeMap<u64, System>,
 }
 
 impl Deref for World {
@@ -40,25 +40,25 @@ impl DerefMut for World {
 impl World {
     /// Register a system in the world. The index gives the order of update of all the system, starting from 0.
     #[inline]
-    pub fn register_system(&mut self, system: System, index: i32) -> Option<System> {
+    pub fn register_system(&mut self, system: System, index: u64) -> Option<System> {
         self.systems.insert(index, system)
     }
 
     /// Get a reference to a registered system by id.
-    pub fn get_system(&self, index: i32) -> Option<&System> {
+    pub fn get_system(&self, index: u64) -> Option<&System> {
         self.systems.get(&index)
     }
 
     /// Get a mutable reference to a regsistered system by id.
-    pub fn get_system_mut(&mut self, index: i32) -> Option<&mut System> {
+    pub fn get_system_mut(&mut self, index: u64) -> Option<&mut System> {
         self.systems.get_mut(&index)
     }
 
     /// Call an update on every registered systems.
-    pub fn update(&mut self, delta: f32, user_data: &mut dyn Any) {
+    pub fn update(&mut self, delta: f32) {
         // update every system in order
         for (_id, system) in self.systems.iter_mut() {
-            system.update(&mut self.components, delta, user_data);
+            system.update(&mut self.components, delta);
         }
     }
 }

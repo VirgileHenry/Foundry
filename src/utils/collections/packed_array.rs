@@ -193,5 +193,10 @@ impl<T> PackedArray<T> {
     pub fn get_vec_mut(&mut self) -> &mut Vec<IndexedElem<T>> {
         return &mut self.data;
     }
+
+    /// Consumes the packed array, returning an iterator over index and elements.
+    pub fn drain(self) -> impl Iterator<Item = (usize, T)> {
+        self.data.into_iter().map(|IndexedElem{index, elem}| (index, elem))
+    }
 }
 

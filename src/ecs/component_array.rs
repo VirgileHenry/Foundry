@@ -87,5 +87,11 @@ impl<C> ComponentArray<C> {
         return (*self.comp_arr.get()).get_vec_mut();
     }
 
+    /// Consumes the comp array and return an iterator over it.
+    pub fn drain(self) -> impl Iterator<Item = (usize, C)> {
+        self.comp_arr.into_inner().drain()
+    }
+
+
 
 }
