@@ -54,14 +54,9 @@ impl World {
         self.systems.get_mut(&index)
     }
 
-    /// access to the inner systems as an iterator.
-    pub fn system_iter(&self) -> impl Iterator<Item = &System> {
-        self.systems.values()
-    }
-
-    /// mutable access to the inner systems as an iterator.
-    pub fn system_iter_mut(&mut self) -> impl Iterator<Item = &mut System> {
-        self.systems.values_mut()
+    /// removes a system from the world.
+    pub fn remove_system(&mut self, index: u64) -> Option<System> {
+        self.systems.remove(&index)
     }
 
     /// Call an update on every registered systems.
