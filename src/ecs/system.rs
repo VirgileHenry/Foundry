@@ -46,6 +46,11 @@ impl System {
     pub fn try_get_updatable<T: Updatable + 'static>(&self) -> Option<&T> {
         return self.system.as_any().downcast_ref::<T>();
     }
+
+    /// Try to downcast the inner updatable to a concrete type, as mutable.
+    pub fn try_get_updatable_mut<T: Updatable + 'static>(&mut self) -> Option<&mut T> {
+        return self.system.as_any_mut().downcast_mut::<T>();
+    }
 }
 
 /// Trait that allow any struct to be used as a system.
