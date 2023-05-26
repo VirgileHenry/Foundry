@@ -72,18 +72,5 @@ impl World {
         }
     }
 
-    /// calls the on start on every system.
-    pub fn on_start(&mut self) {
-        for (_id, system) in self.systems.iter_mut() {
-            system.on_start(&mut self.components);
-        }
-    }
-
-    /// calls the clean up on every system.
-    pub fn clean_up(&mut self) {
-        for (_id, system) in self.systems.iter_mut() {
-            system.clean_up(&mut self.components);
-        }
-    }
 }
 

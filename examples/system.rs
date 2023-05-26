@@ -1,5 +1,6 @@
 use foundry::*;
-    // a position component
+
+// a position component
 struct Position {
     x: f32,
     y: f32,
@@ -10,7 +11,7 @@ struct Velocity {
     vy: f32,
 }
 
-#[derive(Clone)]
+#[derive(AsAny)]
 struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {

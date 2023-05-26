@@ -11,13 +11,15 @@ pub use ecs::{
     component_table::ComponentTable,
     world::World,
     system::{
+        AsAny,
         System,
         Updatable,
         UpdateFrequency,
     },
 };
 
-// expose our macros (all of them are needed, because they call each other)
+// expose our proc macros
+pub use foundry_macro::AsAny;
 
 // create public types but would be better to hide them
 // however, they are needed in a macro so I don't know how to hide them

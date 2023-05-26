@@ -42,24 +42,18 @@ impl System {
         }
     }
 
-    /// calls on start on the inner system.
-    pub fn on_start(&mut self, components: &mut ComponentTable) {
-        self.system.on_start(components);
-    }
-
-    /// calls clean up on the inner system.
-    pub fn clean_up(&mut self, components: &mut ComponentTable) {
-        self.system.clean_up(components);
+    /// Try to downcast the inner updatable to a concrete type.
+    pub fn try_get_updatable<T: Updatable + 'static>(&self) -> Option<&T> {
+        return self.system.as_any().downcast_ref::<T>();
     }
 }
 
 /// Trait that allow any struct to be used as a system.
-pub trait Updatable {
-    // Optionnal, called for any initial set up.
-    fn on_start(&mut self, _components: &mut ComponentTable) {}
-    /// update that will be called by the system manager.
+pub trait Updatable: AsAny {
     fn update(&mut self, components: &mut ComponentTable, delta: f32);
-    /// Optionnal function, called when the system will be deleted.
-    fn clean_up(&mut self, _components: &mut ComponentTable) {}
 }
 
+pub trait AsAny {
+    fn as_any(&self) -> &dyn std::any::Any;
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+}
