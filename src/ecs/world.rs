@@ -54,6 +54,16 @@ impl World {
         self.systems.get_mut(&index)
     }
 
+    /// Get a reference to a system, keeping a reference to the component table.
+    pub fn get_system_and_world(&self, index: u64) -> Option<(&System, &ComponentTable)> {
+        self.systems.get(&index).map(|system| (system, &self.components))
+    }
+
+    /// Get a mutable reference to a system, keeping a mutable reference to the component table.
+    pub fn get_system_and_world_mut(&mut self, index: u64) -> Option<(&mut System, &mut ComponentTable)> {
+        self.systems.get_mut(&index).map(|system| (system, &mut self.components))
+    }
+
     /// removes a system from the world.
     pub fn remove_system(&mut self, index: u64) -> Option<System> {
         self.systems.remove(&index)

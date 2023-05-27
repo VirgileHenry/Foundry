@@ -10,8 +10,9 @@ macro_rules! create_result_inner {
             current_entity: 0,
             current_component: $current_comp:expr,
             active_entities: $active_entities:expr,
+            entity_layers: &entity_layers:expr,
             ($($out:tt)*)
-        }, $comp:ident, $($rest:tt)*
+        }, $comp:ident, $($rest:tt)+
     ) => {
         paste::paste! {
             create_result_inner!(
@@ -30,7 +31,7 @@ macro_rules! create_result_inner {
                             None => [].iter().peekable(),
                         },
                     )
-                }, $($rest)*
+                }, $($rest)+
             )
         }
     };
@@ -71,7 +72,7 @@ macro_rules! create_result_inner {
             active_entities: $active_entities:expr,
             entity_layers: $entity_layers:expr,
             ($($out:tt)*)
-        }, mut $comp:ident, $($rest:tt)*
+        }, mut $comp:ident, $($rest:tt)+
     ) => {
         paste::paste! {
             create_result_inner!(
@@ -90,7 +91,7 @@ macro_rules! create_result_inner {
                             None => [].iter_mut().peekable(),
                         },
                     )
-                }, $($rest)*
+                }, $($rest)+
             )
         }
     };
@@ -146,7 +147,7 @@ macro_rules! create_result {
                     active_entities: active_entities,
                     entity_layers: entity_layers,
                     ()
-                }, $($comps)*
+                }, $($comps)+
             )
         }
     };

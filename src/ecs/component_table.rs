@@ -18,6 +18,7 @@ pub struct ComponentTable {
 }
 
 impl Default for ComponentTable {
+    /// Creates a new, empty component table.
     fn default() -> Self {
         Self::new()
     }

@@ -10,10 +10,12 @@ macro_rules! component_iterator {
         {
             // create the entity mask : u32::MAX if not given.
             // hopefully, this little trick would get easily optimized by the compiler
-            let mut ent_mask = u32::MAX;
+            let ent_mask = u32::MAX;
             $(
                 // if we got a mask value, replace the max by it
-                ent_mask = $mask;
+                let ent_mask = $mask;
+                // this is not in another scope, so it's fine.
+                // that's better than mutating it, as it won't give unecessary mut variable if not using this.
             )?
             // static assert that the types are mutually exclusive
             use foundry::paste;

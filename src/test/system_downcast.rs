@@ -3,6 +3,7 @@ use crate::{Updatable, System, AsAny};
 
 
 #[test]
+/// Test the ability to insert a system and downcast it back.
 fn test_system_downcast() {
     #[derive(AsAny)]
     struct MySystem;

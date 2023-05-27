@@ -16,19 +16,21 @@ macro_rules! generate_enum_inner {
         generate_enum_inner!(@end $($out)* $comp)
     };
     (@end $($comp:ident),*) => {
-        #[derive(Copy, Clone)]
-        enum MacroGeneratedComponentsEnum {
-            $(
-                $comp,
-            )+
-            EndOfIterator
+        paste::paste! {
+            #[derive(Copy, Clone)]
+            enum MacroGeneratedComponentsEnum {
+                $(
+                    [<$comp:camel>],
+                )+
+                EndOfIterator
+            }
+            // also, let's create the enum helper funcs
+            foundry::enum_helper_funcs!(
+                MacroGeneratedComponentsEnum;
+                $(MacroGeneratedComponentsEnum::[<$comp:camel>],)+
+                MacroGeneratedComponentsEnum::EndOfIterator
+            );
         }
-        // also, let's create the enum helper funcs
-        foundry::enum_helper_funcs!(
-            MacroGeneratedComponentsEnum;
-            $(MacroGeneratedComponentsEnum::$comp,)+
-            MacroGeneratedComponentsEnum::EndOfIterator
-        );
     };
 }
 

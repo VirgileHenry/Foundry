@@ -7,6 +7,7 @@ macro_rules! impl_iterator_inner {
     // we are adding a non terminal non mutable component.
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+            #[allow(unused_parens)] // case of a single comp given.
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
                 while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
@@ -29,10 +30,11 @@ macro_rules! impl_iterator_inner {
         paste::paste! {           
             impl_iterator_inner!(
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+                    #[allow(unused_parens)] // case of a single comp given.
                     type Item = ($($item_out)* &'a $comp,);
                     fn next(&mut $self) -> Option<Self::Item> {
                         // advance current entity while it is inactive or does not match the mask
-                        while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                        while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
                             $self.current_entity += 1;
                         }
                         // at this point, we are sure to have an active entity with a matching mask
@@ -40,7 +42,7 @@ macro_rules! impl_iterator_inner {
                             match $self.current_component {
                                 (
                                     $($match_out)*
-                                    MacroGeneratedComponentsEnum::$comp => {
+                                    MacroGeneratedComponentsEnum::[<$comp:camel>] => {
                                         // advance until we go at or pass entity
                                         while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                             $self.[<$comp:snake>].next();
@@ -75,9 +77,10 @@ macro_rules! impl_iterator_inner {
     // we are adding a terminal non mutable component.
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+            #[allow(unused_parens)] // case of a single comp given.
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
-                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
                 }
                 loop {
@@ -96,17 +99,18 @@ macro_rules! impl_iterator_inner {
     ) => {
         paste::paste! {           
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+                #[allow(unused_parens)] // case of a single comp given.
                 type Item = ($($item_out)* &'a $comp);
                 fn next(&mut $self) -> Option<Self::Item> {
                     // advance current entity while it is inactive or does not match the mask
-                    while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                    while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
                         $self.current_entity += 1;
                     }
-                    // at this point, we are sure to have an active entity with a matching mask
+                    // at this point, ..we are sure to have an active entity with a matching mask
                     loop {
                         match $self.current_component {
                             $($match_out)*
-                            MacroGeneratedComponentsEnum::$comp => {
+                            MacroGeneratedComponentsEnum::[<$comp:camel>] => {
                                 // advance until we go at or pass entity
                                 while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                     $self.[<$comp:snake>].next();
@@ -139,9 +143,10 @@ macro_rules! impl_iterator_inner {
     // we are adding a non terminal mutable component.
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+            #[allow(unused_parens)] // case of a single comp given.
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
-                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
                 }
                 loop {
@@ -161,10 +166,11 @@ macro_rules! impl_iterator_inner {
         paste::paste! {           
             impl_iterator_inner!(
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+                    #[allow(unused_parens)] // case of a single comp given.
                     type Item = ($($item_out)* &'a mut $comp,);
                     fn next(&mut $self) -> Option<Self::Item> {
                         // advance current entity while it is inactive or does not match the mask
-                        while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                        while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
                             $self.current_entity += 1;
                         }
                         // at this point, we are sure to have an active entity with a matching mask
@@ -172,7 +178,7 @@ macro_rules! impl_iterator_inner {
                             match $self.current_component {
                                 (
                                     $($match_out)*
-                                    MacroGeneratedComponentsEnum::$comp => {
+                                    MacroGeneratedComponentsEnum::[<$comp:camel>] => {
                                         // advance until we go at or pass entity
                                         while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                             $self.[<$comp:snake>].next();
@@ -207,9 +213,10 @@ macro_rules! impl_iterator_inner {
     // we are adding a terminal mutable component.
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+            #[allow(unused_parens)] // case of a single comp given.
             type Item = ($($item_out:tt)*);
             fn next(&mut $self:ident) -> Option<Self::Item> {
-                while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
                 }
                 loop {
@@ -228,17 +235,18 @@ macro_rules! impl_iterator_inner {
     ) => {
         paste::paste! {           
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+                #[allow(unused_parens)] // case of a single comp given.
                 type Item = ($($item_out)* &'a mut $comp);
                 fn next(&mut $self) -> Option<Self::Item> {
                     // advance current entity while it is inactive or does not match the mask
-                    while !($self.active_entities.get($self.current_entity)? && ($self.entity_layers.get($self.current_entity)? & $self.entity_mask > 0)) {
+                    while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
                         $self.current_entity += 1;
                     }
                     // at this point, we are sure to have an active entity with a matching mask
                     loop {
                         match $self.current_component {
                             $($match_out)*
-                            MacroGeneratedComponentsEnum::$comp => {
+                            MacroGeneratedComponentsEnum::[<$comp:camel>] => {
                                 // advance until we go at or pass entity
                                 while $self.[<$comp:snake>].peek()?.index() < $self.current_entity {
                                     $self.[<$comp:snake>].next();
@@ -274,12 +282,13 @@ macro_rules! impl_iterator_inner {
 /// This calls the inner impl iterator macro, passing it the correct start arguments.
 #[macro_export]
 macro_rules! impl_iterator {
-    ($($comps:tt)*) => {
+    ($($comps:tt)+) => {
         impl_iterator_inner!(
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
+                #[allow(unused_parens)] // case of a single comp given.
                 type Item = ();
                 fn next(&mut self) -> Option<Self::Item> {
-                    while !(self.active_entities.get(self.current_entity)? && (self.entity_layers.get(self.current_entity)? & self.entity_mask > 0)) {
+                    while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                         self.current_entity += 1;
                     }
                     loop {
@@ -294,7 +303,7 @@ macro_rules! impl_iterator {
                         }
                     }
                 }
-            }, $($comps)*
+            }, $($comps)+
         );
     }
 }
