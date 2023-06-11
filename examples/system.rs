@@ -16,7 +16,7 @@ struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ComponentTable, delta: f32) {
-        for (pos, vel) in component_iterator!(components; mut Position, Velocity) {
+        for (_, (pos, vel)) in component_iterator!(components; mut Position, Velocity) {
             pos.x += vel.vx * delta;
             pos.y += vel.vy * delta;
         }

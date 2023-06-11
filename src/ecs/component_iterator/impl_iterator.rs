@@ -8,7 +8,7 @@ macro_rules! impl_iterator_inner {
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             #[allow(unused_parens)] // case of a single comp given.
-            type Item = ($($item_out:tt)*);
+            type Item = (foundry::Entity, ($($item_out:tt)*));
             fn next(&mut $self:ident) -> Option<Self::Item> {
                 while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
@@ -17,7 +17,7 @@ macro_rules! impl_iterator_inner {
                     match self.current_component {
                         ($($match_out:tt)*)
                         MacroGeneratedComponentsEnum::EndOfIterator => {
-                            let result = ($($result_out:tt)*);
+                            let result = (self.current_entity, ($($result_out:tt)*));
                             self.current_entity += 1;
                             self.current_component = macro_generated_reset();
                             return Some(result);
@@ -31,7 +31,7 @@ macro_rules! impl_iterator_inner {
             impl_iterator_inner!(
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                     #[allow(unused_parens)] // case of a single comp given.
-                    type Item = ($($item_out)* &'a $comp,);
+                    type Item = (foundry::Entity, ($($item_out)* &'a $comp,));
                     fn next(&mut $self) -> Option<Self::Item> {
                         // advance current entity while it is inactive or does not match the mask
                         while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
@@ -60,8 +60,9 @@ macro_rules! impl_iterator_inner {
                                 )
                                 MacroGeneratedComponentsEnum::EndOfIterator => {
                                     let result = (
-                                        $($result_out)*
-                                        $self.[<$comp:snake>].next()?.elem(),
+                                        $self.current_entity,
+                                        ($($result_out)*
+                                        $self.[<$comp:snake>].next()?.elem(),)
                                     );
                                     self.current_entity += 1;
                                     self.current_component = macro_generated_reset();
@@ -78,7 +79,7 @@ macro_rules! impl_iterator_inner {
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             #[allow(unused_parens)] // case of a single comp given.
-            type Item = ($($item_out:tt)*);
+            type Item = (foundry::Entity, ($($item_out:tt)*));
             fn next(&mut $self:ident) -> Option<Self::Item> {
                 while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
@@ -87,7 +88,7 @@ macro_rules! impl_iterator_inner {
                     match self.current_component {
                         ($($match_out:tt)*)
                         MacroGeneratedComponentsEnum::EndOfIterator => {
-                            let result = ($($result_out:tt)*);
+                            let result = (self.current_entity, ($($result_out:tt)*));
                             self.current_entity += 1;
                             self.current_component = macro_generated_reset();
                             return Some(result);
@@ -100,7 +101,7 @@ macro_rules! impl_iterator_inner {
         paste::paste! {           
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 #[allow(unused_parens)] // case of a single comp given.
-                type Item = ($($item_out)* &'a $comp);
+                type Item = (foundry::Entity, ($($item_out)* &'a $comp));
                 fn next(&mut $self) -> Option<Self::Item> {
                     // advance current entity while it is inactive or does not match the mask
                     while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
@@ -127,8 +128,9 @@ macro_rules! impl_iterator_inner {
                             }
                             MacroGeneratedComponentsEnum::EndOfIterator => {
                                 let result = (
-                                    $($result_out)*
-                                    $self.[<$comp:snake>].next()?.elem()
+                                    $self.current_entity,
+                                    ($($result_out)*
+                                    $self.[<$comp:snake>].next()?.elem())
                                 );
                                 $self.current_entity += 1;
                                 $self.current_component = macro_generated_reset();
@@ -144,7 +146,7 @@ macro_rules! impl_iterator_inner {
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             #[allow(unused_parens)] // case of a single comp given.
-            type Item = ($($item_out:tt)*);
+            type Item = (foundry::Entity, ($($item_out:tt)*));
             fn next(&mut $self:ident) -> Option<Self::Item> {
                 while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
@@ -153,7 +155,7 @@ macro_rules! impl_iterator_inner {
                     match self.current_component {
                         ($($match_out:tt)*)
                         MacroGeneratedComponentsEnum::EndOfIterator => {
-                            let result = ($($result_out:tt)*);
+                            let result = (self.current_entity, ($($result_out:tt)*));
                             self.current_entity += 1;
                             self.current_component = macro_generated_reset();
                             return Some(result);
@@ -167,7 +169,7 @@ macro_rules! impl_iterator_inner {
             impl_iterator_inner!(
                 impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                     #[allow(unused_parens)] // case of a single comp given.
-                    type Item = ($($item_out)* &'a mut $comp,);
+                    type Item = (foundry::Entity, ($($item_out)* &'a mut $comp,));
                     fn next(&mut $self) -> Option<Self::Item> {
                         // advance current entity while it is inactive or does not match the mask
                         while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
@@ -196,8 +198,9 @@ macro_rules! impl_iterator_inner {
                                 )
                                 MacroGeneratedComponentsEnum::EndOfIterator => {
                                     let result = (
-                                        $($result_out)*
-                                        $self.[<$comp:snake>].next()?.elem_mut(),
+                                        $self.current_entity,
+                                        ($($result_out)*
+                                        $self.[<$comp:snake>].next()?.elem_mut(),)
                                     );
                                     self.current_entity += 1;
                                     self.current_component = macro_generated_reset();
@@ -214,7 +217,7 @@ macro_rules! impl_iterator_inner {
     (
         impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
             #[allow(unused_parens)] // case of a single comp given.
-            type Item = ($($item_out:tt)*);
+            type Item = (foundry::Entity, ($($item_out:tt)*));
             fn next(&mut $self:ident) -> Option<Self::Item> {
                 while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                     self.current_entity += 1;
@@ -223,7 +226,7 @@ macro_rules! impl_iterator_inner {
                     match self.current_component {
                         ($($match_out:tt)*)
                         MacroGeneratedComponentsEnum::EndOfIterator => {
-                            let result = ($($result_out:tt)*);
+                            let result = (self.current_entity, ($($result_out:tt)*));
                             self.current_entity += 1;
                             self.current_component = macro_generated_reset();
                             return Some(result);
@@ -236,7 +239,7 @@ macro_rules! impl_iterator_inner {
         paste::paste! {           
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 #[allow(unused_parens)] // case of a single comp given.
-                type Item = ($($item_out)* &'a mut $comp);
+                type Item = (foundry::Entity, ($($item_out)* &'a mut $comp));
                 fn next(&mut $self) -> Option<Self::Item> {
                     // advance current entity while it is inactive or does not match the mask
                     while !$self.active_entities.get($self.current_entity)? || ($self.entity_layers.get($self.current_entity)? & $self.entity_mask) == 0 {
@@ -263,8 +266,9 @@ macro_rules! impl_iterator_inner {
                             }
                             MacroGeneratedComponentsEnum::EndOfIterator => {
                                 let result = (
-                                    $($result_out)*
-                                    $self.[<$comp:snake>].next()?.elem_mut()
+                                    $self.current_entity,
+                                    ($($result_out)*
+                                    $self.[<$comp:snake>].next()?.elem_mut())
                                 );
                                 $self.current_entity += 1;
                                 $self.current_component = macro_generated_reset();
@@ -286,7 +290,7 @@ macro_rules! impl_iterator {
         impl_iterator_inner!(
             impl<'a> Iterator for MacroGeneratedComponentIterator<'a> {
                 #[allow(unused_parens)] // case of a single comp given.
-                type Item = ();
+                type Item = (foundry::Entity, ());
                 fn next(&mut self) -> Option<Self::Item> {
                     while !self.active_entities.get(self.current_entity)? || (self.entity_layers.get(self.current_entity)? & self.entity_mask) == 0 {
                         self.current_entity += 1;
@@ -295,7 +299,7 @@ macro_rules! impl_iterator {
                         match self.current_component {
                             ()
                             MacroGeneratedComponentsEnum::EndOfIterator => {
-                                let result = ();
+                                let result = (self.current_entity, ());
                                 self.current_entity += 1;
                                 self.current_component = macro_generated_reset();
                                 return Some(result);

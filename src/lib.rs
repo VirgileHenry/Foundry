@@ -10,6 +10,7 @@ pub(crate) mod test;
 pub use ecs::{
     component_table::ComponentTable,
     world::World,
+    entity::Entity,
     system::{
         AsAny,
         System,
