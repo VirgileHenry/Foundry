@@ -111,6 +111,11 @@ impl ComponentTable {
         self.singletons.get_mut::<C>()
     }
 
+    #[inline]
+    pub fn remove_singleton<C: 'static>(&mut self) -> Option<C> {
+        self.singletons.remove::<C>()
+    }
+
     /// Adds a component to an entity assuming no entity with a highter id have this time of component.
     /// This is faster than ```add_component``` but can break the table if the condition isn't valid.
     /// This should only be used when creating an entity with components.
