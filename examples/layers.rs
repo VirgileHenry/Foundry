@@ -1,4 +1,4 @@
-use foundry::{World, create_entities, component_iterator};
+use foundry::{World, create_entities};
 
 
 
@@ -23,19 +23,19 @@ fn main() {
 
     // now, let's iterate with masks : 
     println!("Expecting all 6 entities"); 
-    for (_, ent) in component_iterator!(&world; String) {
+    for (_, ent) in world.query1d::<String>() {
         println!("{ent}");
     }
 
     println!("Expecting all 2->5 entities");
     // now, let's iterate with only the second layer masks : 
-    for (_, ent) in component_iterator!(&world, 1 << 2; String) {
+    for (_, ent) in world.query1d::<String>() {
         println!("{ent}");
     }
 
     println!("Expecting 0,1,4,5 entities");
     // finally, on everything but the second layer :
-    for (_, ent) in component_iterator!(&world, !(1 << 2); String) {
+    for (_, ent) in world.query1d::<String>() {
         println!("{ent}");
     }
 }

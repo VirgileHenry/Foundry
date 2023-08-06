@@ -200,6 +200,13 @@ impl ComponentTable {
         };
     }
 
+    /// get the entity layers.
+    #[inline]
+    pub fn get_entity_layers(&self) -> &Vec<u32> {
+        &self.entity_layers
+    }
+
+
     /// set an entity single layer.
     pub fn set_entity_layer(&mut self, entity: Entity, layer: u8, value: bool) {
         match self.entity_layers.get_mut(entity) {
@@ -228,11 +235,6 @@ impl ComponentTable {
             Some(layers) => *layers ^= 1 << layer,
             None => {},
         }
-    }
-
-    /// Borrow the entity layers.
-    pub fn get_layers(&self) -> &Vec<u32> {
-        &self.entity_layers
     }
 
     /// Remove an entire row of components from the comp table, returning an iterator over it.

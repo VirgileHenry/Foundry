@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use foundry::*;
 
 // a position component
@@ -16,7 +18,8 @@ struct PhysicSystem {}
 
 impl Updatable for PhysicSystem {
     fn update(&mut self, components: &mut ComponentTable, delta: f32) {
-        for (_, (pos, vel)) in component_iterator!(components; mut Position, Velocity) {
+        println!("update");
+        for (_, pos, vel) in components.query2d_mut::<Position, Velocity>() {
             pos.x += vel.vx * delta;
             pos.y += vel.vy * delta;
         }
@@ -32,17 +35,19 @@ fn main() {
 
     let physics = PhysicSystem {};
 
-    let physic_system = System::new(Box::new(physics), UpdateFrequency::Fixed(0.002));
+    let physic_system = System::new(physics, UpdateFrequency::Fixed(0.002));
 
     world.register_system(physic_system, 1);
 
     let mut prev = Instant::now();
+    let mut time = Duration::new(0, 0);
 
-    for _ in 0..1000 {
+    while time < Duration::new(1, 0) {
         let delta = prev.elapsed().as_secs_f64();
 
         world.update(delta as f32);
         
+        time += prev.elapsed();
         prev = Instant::now();
     }
 }

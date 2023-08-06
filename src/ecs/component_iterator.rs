@@ -1,49 +1,40 @@
-pub(crate) mod create_result;
-pub(crate) mod enum_helper_funcs;
-pub(crate) mod generate_enum;
-pub(crate) mod generate_result_struct;
-pub(crate) mod impl_iterator;
+pub use crate::{
+    generate_query,
+    generate_query_mut,
+    impl_query,
+    impl_query_mut,
+    FoundryBoolVecInner,
+    FoundryEntityMasks,
+    FoundryIndexedElemInner,
+};
 
-#[macro_export]
-macro_rules! component_iterator {
-    ($components:expr $(, $mask:expr)?; $($comps:tt)+) => {
-        {
-            // create the entity mask : u32::MAX if not given.
-            // hopefully, this little trick would get easily optimized by the compiler
-            let ent_mask = u32::MAX;
-            $(
-                // if we got a mask value, replace the max by it
-                let ent_mask = $mask;
-                // this is not in another scope, so it's fine.
-                // that's better than mutating it, as it won't give unecessary mut variable if not using this.
-            )?
-            // static assert that the types are mutually exclusive
-            use foundry::paste;
-            use foundry::assert_exclusive_types;
-            use foundry::assert_exclusive_types_inner;
-            assert_exclusive_types!($($comps)+);
-            // generate the enum used for the iterator
-            use foundry::generate_enum;
-            use foundry::generate_enum_inner;
-            generate_enum!($($comps)+);
-            // generate the result struct with correct mutability
-            use foundry::generate_result_struct;
-            use foundry::generate_result_struct_impl;
-            generate_result_struct!($($comps)+);
-            // impl iterator for our result struct
-            use foundry::impl_iterator;
-            use foundry::impl_iterator_inner;
-            impl_iterator!($($comps)+);
-            // finally, create an instance of the result struct
-            use foundry::create_result;
-            use foundry::create_result_inner;
-            create_result!($components, ent_mask, $($comps)+)
-        }
-    };
-}
+pub(crate) mod query;
+pub(crate) mod query_mut;
+pub(crate) mod query_state;
 
-/*
-Work in progress : this whole iteration macro could and should (maybe will ?) be optimized.
-Comparing to bevy or legion, we are actually 10x slower to iterate over entities.
-I think this is due to the structure, but also to the mask and entity activity that add lots of checks.
- */
+
+generate_query!(Query1d, Query1dState, T1);
+generate_query!(Query2d, Query2dState, T1, T2);
+generate_query!(Query3d, Query3dState, T1, T2, T3);
+generate_query!(Query4d, Query4dState, T1, T2, T3, T4);
+generate_query!(Query5d, Query5dState, T1, T2, T3, T4, T5);
+generate_query!(Query6d, Query6dState, T1, T2, T3, T4, T5, T6);
+generate_query!(Query7d, Query7dState, T1, T2, T3, T4, T5, T6, T7);
+generate_query!(Query8d, Query8dState, T1, T2, T3, T4, T5, T6, T7, T8);
+
+impl_query!(Query1d, Query1dState, T1);
+impl_query!(Query2d, Query2dState, T1, T2);
+impl_query!(Query3d, Query3dState, T1, T2, T3);
+
+generate_query_mut!(Query1dMut, Query1dMutState, T1);
+generate_query_mut!(Query2dMut, Query2dMutState, T1, T2);
+generate_query_mut!(Query3dMut, Query3dMutState, T1, T2, T3);
+generate_query_mut!(Query4dMut, Query4dMutState, T1, T2, T3, T4);
+generate_query_mut!(Query5dMut, Query5dMutState, T1, T2, T3, T4, T5);
+generate_query_mut!(Query6dMut, Query6dMutState, T1, T2, T3, T4, T5, T6);
+generate_query_mut!(Query7dMut, Query7dMutState, T1, T2, T3, T4, T5, T6, T7);
+generate_query_mut!(Query8dMut, Query8dMutState, T1, T2, T3, T4, T5, T6, T7, T8);
+
+impl_query_mut!(Query1dMut, Query1dMutState, T1);
+impl_query_mut!(Query2dMut, Query2dMutState, T1, T2);
+impl_query_mut!(Query3dMut, Query3dMutState, T1, T2, T3);

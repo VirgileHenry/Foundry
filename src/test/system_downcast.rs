@@ -1,4 +1,6 @@
-use crate::{Updatable, System, AsAny};
+use crate::AsAny;
+
+use crate::{Updatable, System};
 
 
 
@@ -12,7 +14,7 @@ fn test_system_downcast() {
         fn update(&mut self, _components: &mut crate::ComponentTable, _delta: f32) { }
     }
 
-    let syst = System::new(Box::new(MySystem), crate::UpdateFrequency::PerFrame);
+    let syst = System::new(MySystem, crate::UpdateFrequency::PerFrame);
 
     assert!(syst.try_get_updatable::<MySystem>().is_some());
 

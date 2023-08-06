@@ -23,8 +23,8 @@ pub struct System {
 
 impl System {
     /// Creates a new system from any struct implementing the ```Updatable``` trait.
-    pub fn new(system: Box<dyn Updatable>, update_frequency: UpdateFrequency) -> System {
-        return System { system: system, frequency: update_frequency, timer: 0.0 };
+    pub fn new<T: Updatable + 'static>(system: T, update_frequency: UpdateFrequency) -> System {
+        return System { system: Box::new(system), frequency: update_frequency, timer: 0.0 };
     }
 
     /// Update the system.
@@ -62,3 +62,15 @@ pub trait AsAny {
     fn as_any(&self) -> &dyn std::any::Any;
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
 }
+
+/*
+impl<T: 'static> AsAny for T {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
+*/

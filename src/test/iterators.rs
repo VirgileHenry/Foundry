@@ -9,17 +9,56 @@ use foundry::*;
 fn comp_iter() {
     let mut world = World::default();
 
-    create_entities!(world; 100, |i| i, |i| format!("{i}"));
+    create_entities!(world; 5, |i| i as usize, |i| format!("{i}"));
 
-    // try different combinations of iterations
-    for _ in component_iterator!(&world; usize) {}
-    for _ in component_iterator!(&world; String) {}
-    for _ in component_iterator!(&world; mut usize) {}
-    for _ in component_iterator!(&world; mut String) {}
-    // for _ in component_iterator!(&world; usize, String) {}
-    for _ in component_iterator!(&world; mut usize, String) {}
-    // for _ in component_iterator!(&world; usize, mut String) {}
-    for _ in component_iterator!(&world; mut usize, mut String) {}
-    // if all of these pass, it should get pretty expandable from here.
+    let mut iter = world.query1d::<usize>();
+    assert_eq!(iter.next(), Some((0, &0)));
+    assert_eq!(iter.next(), Some((1, &1)));
+    assert_eq!(iter.next(), Some((2, &2)));
+    assert_eq!(iter.next(), Some((3, &3)));
+    assert_eq!(iter.next(), Some((4, &4)));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = world.query1d::<String>();
+    assert_eq!(iter.next(), Some((0, &"0".to_string())));
+    assert_eq!(iter.next(), Some((1, &"1".to_string())));
+    assert_eq!(iter.next(), Some((2, &"2".to_string())));
+    assert_eq!(iter.next(), Some((3, &"3".to_string())));
+    assert_eq!(iter.next(), Some((4, &"4".to_string())));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = world.query2d::<usize, String>();
+    assert_eq!(iter.next(), Some((0, &0, &"0".to_string())));
+    assert_eq!(iter.next(), Some((1, &1, &"1".to_string())));
+    assert_eq!(iter.next(), Some((2, &2, &"2".to_string())));
+    assert_eq!(iter.next(), Some((3, &3, &"3".to_string())));
+    assert_eq!(iter.next(), Some((4, &4, &"4".to_string())));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = world.query1d_mut::<usize>();
+    assert_eq!(iter.next(), Some((0, &mut 0)));
+    assert_eq!(iter.next(), Some((1, &mut 1)));
+    assert_eq!(iter.next(), Some((2, &mut 2)));
+    assert_eq!(iter.next(), Some((3, &mut 3)));
+    assert_eq!(iter.next(), Some((4, &mut 4)));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = world.query1d_mut::<String>();
+    assert_eq!(iter.next(), Some((0, &mut "0".to_string())));
+    assert_eq!(iter.next(), Some((1, &mut "1".to_string())));
+    assert_eq!(iter.next(), Some((2, &mut "2".to_string())));
+    assert_eq!(iter.next(), Some((3, &mut "3".to_string())));
+    assert_eq!(iter.next(), Some((4, &mut "4".to_string())));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = world.query2d_mut::<usize, String>();
+    assert_eq!(iter.next(), Some((0, &mut 0, &mut "0".to_string())));
+    assert_eq!(iter.next(), Some((1, &mut 1, &mut "1".to_string())));
+    assert_eq!(iter.next(), Some((2, &mut 2, &mut "2".to_string())));
+    assert_eq!(iter.next(), Some((3, &mut 3, &mut "3".to_string())));
+    assert_eq!(iter.next(), Some((4, &mut 4, &mut "4".to_string())));
+    assert_eq!(iter.next(), None);
+    
+
 }
 

@@ -14,15 +14,15 @@ fn main() {
     let _entities3 = create_entities!(world; 10, |i| format!("entity {}", 20 + i));
 
     // iterate over entities and print their components
-    for (ent, name) in component_iterator!(&world; String) {
+    for (ent, name) in world.query1d::<String>() {
         println!("entity: {}, name: {}", ent, name);
     }
     // iterate over entities and print their components
-    for (ent, index) in component_iterator!(&world; mut i32) {
+    for (ent, index) in  world.query1d::<i32>() {
         println!("entity: {}, index: {}", ent, index);
     }
     // iterate over entities and print their components
-    for (ent, (index, name)) in component_iterator!(&world; mut i32, String) {
+    for (ent, index, name) in world.query2d::<i32, String>() {
         println!("entity: {}, index: {}, name: {}", ent, index, name);
     }
 
